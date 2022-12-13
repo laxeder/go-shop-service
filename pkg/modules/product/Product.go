@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 )
 
 type Product struct {
+	Uid         string   `json:"uid,omitempty" redis:"uid,omitempty"`
 	Name        string   `json:"name,omitempty" redis:"name,omitempty"`
 	Description string   `json:"description,omitempty" redis:"description,omitempty"`
 	Pictures    []string `json:"pictures,omitempty" redis:"pictures,omitempty"`
@@ -17,6 +19,7 @@ type Product struct {
 	Code        string   `json:"code,omitempty" redis:"code,omitempty"`
 	Weight      string   `json:"weight,omitempty" redis:"weight,omitempty"`
 	Color       string   `json:"color,omitempty" redis:"color,omitempty"`
+	Status      Status   `json:"status,omitempty" redis:"status,omitempty"`
 	CreatedAt   string   `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt   string   `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
@@ -40,117 +43,132 @@ func New(productByte ...[]byte) (product *Product, err error) {
 	return product, err
 }
 
-func (a *Product) SetName(name string) string {
-	a.Name = name
-	return a.Name
+func (p *Product) NewUid() string {
+	p.Uid = uuid.New().String()
+	return p.Uid
 }
 
-func (a *Product) SetDescription(description string) string {
-	a.Description = description
-	return a.Description
+func (p *Product) SetUid(uid string) string {
+	p.Uid = uid
+	return p.Uid
 }
 
-func (a *Product) SetCategorys(categorys []string) []string {
-	a.Categorys = categorys
-	return a.Categorys
+func (p *Product) SetStatus(status Status) Status {
+	p.Status = status
+	return status
 }
 
-func (a *Product) SetPictures(pictures []string) []string {
-	a.Pictures = pictures
-	return a.Pictures
+func (p *Product) SetName(name string) string {
+	p.Name = name
+	return p.Name
 }
 
-func (a *Product) SetPrice(price string) string {
-	a.Price = price
-	return a.Price
+func (p *Product) SetDescription(description string) string {
+	p.Description = description
+	return p.Description
 }
 
-func (a *Product) SetPromotion(promotion string) string {
-	a.Promotion = promotion
-	return a.Promotion
+func (p *Product) SetCategorys(categorys []string) []string {
+	p.Categorys = categorys
+	return p.Categorys
 }
 
-func (a *Product) SetCode(code string) string {
-	a.Code = code
-	return a.Code
+func (p *Product) SetPictures(pictures []string) []string {
+	p.Pictures = pictures
+	return p.Pictures
 }
 
-func (a *Product) SetColor(color string) string {
-	a.Color = color
-	return a.Color
+func (p *Product) SetPrice(price string) string {
+	p.Price = price
+	return p.Price
 }
 
-func (a *Product) SetWeight(weight string) string {
-	a.Weight = weight
-	return a.Weight
+func (p *Product) SetPromotion(promotion string) string {
+	p.Promotion = promotion
+	return p.Promotion
 }
 
-func (a *Product) SetCreatedAt(createdAt string) string {
-	a.CreatedAt = createdAt
-	return a.CreatedAt
+func (p *Product) SetCode(code string) string {
+	p.Code = code
+	return p.Code
 }
 
-func (a *Product) SetUpdatedAt(updatedAt string) string {
-	a.UpdatedAt = updatedAt
-	return a.UpdatedAt
+func (p *Product) SetColor(color string) string {
+	p.Color = color
+	return p.Color
 }
 
-func (a *Product) ToString() (string, error) {
+func (p *Product) SetWeight(weight string) string {
+	p.Weight = weight
+	return p.Weight
+}
+
+func (p *Product) SetCreatedAt(createdAt string) string {
+	p.CreatedAt = createdAt
+	return p.CreatedAt
+}
+
+func (p *Product) SetUpdatedAt(updatedAt string) string {
+	p.UpdatedAt = updatedAt
+	return p.UpdatedAt
+}
+
+func (p *Product) ToString() (string, error) {
 	var log = logger.New()
 
-	productJson, err := json.Marshal(a)
+	productJson, err := json.Marshal(p)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear a struc para JSON. (%v)", a.Name)
+		log.Error().Err(err).Msgf("Não foi possível mapear p struc para JSON. (%v)", p.Name)
 		return "", err
 	}
 	return string(productJson), nil
 }
 
-func (a *Product) Inject(product *Product) *Product {
+func (p *Product) Inject(product *Product) *Product {
 
 	if product.Name != "" {
-		a.Name = product.Name
+		p.Name = product.Name
 	}
 
 	if product.Description != "" {
-		a.Description = product.Description
+		p.Description = product.Description
 	}
 
 	if fmt.Sprintf(" %T", product.Categorys) != "[]string" {
-		a.Categorys = product.Categorys
+		p.Categorys = product.Categorys
 	}
 
 	if fmt.Sprintf(" %T", product.Pictures) != "[]string" {
-		a.Pictures = product.Pictures
+		p.Pictures = product.Pictures
 	}
 
 	if product.Price != "" {
-		a.Price = product.Price
+		p.Price = product.Price
 	}
 
 	if product.Promotion != "" {
-		a.Promotion = product.Promotion
+		p.Promotion = product.Promotion
 	}
 
 	if product.Code != "" {
-		a.Code = product.Code
+		p.Code = product.Code
 	}
 
 	if product.Color != "" {
-		a.Color = product.Color
+		p.Color = product.Color
 	}
 
 	if product.Weight != "" {
-		a.Weight = product.Weight
+		p.Weight = product.Weight
 	}
 
 	if product.CreatedAt != "" {
-		a.CreatedAt = product.CreatedAt
+		p.CreatedAt = product.CreatedAt
 	}
 
 	if product.UpdatedAt != "" {
-		a.UpdatedAt = product.UpdatedAt
+		p.UpdatedAt = product.UpdatedAt
 	}
 
-	return a
+	return p
 }
