@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	c "github.com/laxeder/go-shop-service/pkg/routes/account"
 	a "github.com/laxeder/go-shop-service/pkg/routes/address"
+	p "github.com/laxeder/go-shop-service/pkg/routes/product"
 	u "github.com/laxeder/go-shop-service/pkg/routes/user"
 )
 
@@ -38,6 +39,14 @@ func ApiV1(app *fiber.App) {
 	route.Get("/account/:document", c.ShowAccount)
 	route.Post("/account", c.CreateAccount)
 	route.Patch("/account", c.ListAccounts)
+
+	route.Put("/product/restore/:uid", p.RestoreProduct)
+	route.Put("/product/uid/:uid", p.UpdateProductUid)
+	route.Delete("/product/:uid", p.DeleteProduct)
+	route.Put("/product/:uid", p.UpdateProduct)
+	route.Get("/product/:uid", p.ShowProduct)
+	route.Post("/product", p.CreateProduct)
+	route.Patch("/product", p.ListProducts)
 
 }
 
