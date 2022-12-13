@@ -1,0 +1,67 @@
+
+# ## GO lang com live-reload para desenvolvimento
+
+# ! ## Maquina para armazenasr as dependencias
+FROM golang:1.19.3 AS environment-go-dependences
+
+# ## install gin live reload
+RUN go install github.com/go-critic/go-critic/cmd/gocritic@latest
+RUN go install honnef.co/go/tools/cmd/staticcheck@latest
+RUN go install golang.org/x/tools/cmd/goimports@latest
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN go install github.com/codegangsta/gin@latest
+RUN go install golang.org/x/lint/golint@latest
+
+# ## Configurando variáveis de Ambiente
+ENV GOOS=linux
+ENV GOPRIVATE=*
+ENV GOARCH=amd64
+ENV CGO_ENABLED=0
+ENV GO111MODULE=on
+ENV APP_HOME=/go/src
+ENV TZ=America/Sao_Paulo
+
+# ## diretorio de trabalho
+WORKDIR "$APP_HOME"
+
+# ## copia o módulo
+COPY go.* ./
+
+# ## baixa as dependencias
+RUN go mod download
+RUN go mod tidy
+RUN go mod vendor
+RUN go mod verify
+
+# ! ## Maquina para excutar o ambiente de desenvolvimento
+FROM environment-go-dependences AS environment-go-dev
+
+# ## Configurando variáveis de Ambiente
+ENV APP_HOME=/go/src
+ENV SERVER_PORT=9000
+
+# ## diretorio de trabalho
+WORKDIR "$APP_HOME"
+
+# ## copia a aplicacao para dentro da maquina
+COPY ./ ./
+
+RUN go vet .
+
+# ## check quality
+RUN golint .
+RUN goimports
+RUN gocritic check .
+RUN staticcheck .
+
+# ## gerar a doc
+RUN swag init
+
+# ## portas de acesso
+EXPOSE "$SERVER_PORT"
+
+# ## cria volume para diretorio padrao
+VOLUME "$APP_HOME"
+
+# ## Executa a aplicacao
+CMD ["gin", "--excludeDir", "docs", "-i", "run"]

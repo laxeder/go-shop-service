@@ -1,0 +1,59 @@
+version: "3"
+services:
+  development:
+    image: environment-go-dev
+    hostname: environment-go-dev
+    container_name: environment-go-dev
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    working_dir: /go/src
+    volumes:
+      - .:/go/src
+    env_file:
+      - ./.env.dev
+    environment:
+      ENVRONMENT: "dev"
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    depends_on:
+      - "redis"
+
+  staging:
+    image: environment-go-staging
+    hostname: environment-go-staging
+    container_name: environment-go-staging
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env.prod
+    environment:
+      ENVRONMENT: "prod"
+    restart: unless-stopped
+    ports:
+      - 7000:80
+  production:
+    image: lucasfrct/environment-go:latest
+    hostname: environment-go
+    container_name: environment-go
+    environment:
+      ENVRONMENT: "prod"
+    restart: unless-stopped
+    ports:
+      - 80:80
+    depends_on:
+      - "redis"
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    container_name: redis
+    working_dir: /data
+    volumes:
+      - ./data/redis:/data
+    restart: always
+    ports:
+      - 6379:6379
+
