@@ -7,4 +7,5 @@ const (
 	Bridge          Nodedatabase = 1
 	AddressDatabase Nodedatabase = 2
 	AccountDatabase Nodedatabase = 3
+	ProductDatabase Nodedatabase = 4
 )
