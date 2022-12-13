@@ -29,38 +29,6 @@ func UpdateUser(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.Error(400, "BLC086", "Não é possível atualiztar do documento "+document+" para o "+userBody.Document))
 	}
 
-	// ! ###########################################################################################################################
-	// ! VALIDA OS DADOS DE ENTRADA
-	// ! ###########################################################################################################################
-
-	if userBody.FirstName != "" {
-		checkFristname := userBody.FirstNameValid()
-		if checkFristname.Status != 200 {
-			return response.Ctx(ctx).Result(checkFristname)
-		}
-	}
-
-	if userBody.LastName != "" {
-		checkLastName := userBody.LastNameValid()
-		if checkLastName.Status != 200 {
-			return response.Ctx(ctx).Result(checkLastName)
-		}
-	}
-
-	if userBody.Email != "" {
-		checkEmail := userBody.EmailValid()
-		if checkEmail.Status != 200 {
-			return response.Ctx(ctx).Result(checkEmail)
-		}
-	}
-
-	if userBody.Telephone != "" {
-		checkTelefone := userBody.TelephoneValid()
-		if checkTelefone.Status != 200 {
-			return response.Ctx(ctx).Result(checkTelefone)
-		}
-	}
-
 	// carrega o usuário da base de dados
 	userDatabase, err := user.Repository().GetByDocument(document)
 	if err != nil {

@@ -6,11 +6,11 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
 )
 
 // atualiza dados da conta
 func UpdateAccount(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
 	body := ctx.Body()
@@ -24,18 +24,25 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	}
 
 	// valida os campos enviados
-	checkAccount := accountBody.Valid()
-	if checkAccount.Status != 200 {
-		return response.Ctx(ctx).Result(checkAccount)
+	// checkAccount := accountBody.Valid()
+	// if checkAccount.Status != 200 {
+	// 	return response.Ctx(ctx).Result(checkAccount)
+	// }
+
+	// carrega o usuário da base de dados
+	accountData, err := account.Repository().GetByDocument(document)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Document)
+		return response.Ctx(ctx).Result(response.Error(400, "BLC081", "Erro ao tentar validar usuário."))
 	}
 
 	// formata a atualização
-	accountBody.Document = str.DocumentPad(document)
-	accountBody.Birthday = date.BRToUTC(accountBody.Birthday)
-	accountBody.UpdatedAt = date.NowUTC()
+	accountData.Inject(accountBody)
+	accountData.Birthday = date.BRToUTC(accountBody.Birthday)
+	accountData.UpdatedAt = date.NowUTC()
 
 	// guarda as alterações na base de dados
-	err = account.Repository().Update(accountBody)
+	err = account.Repository().Update(accountData)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", document)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC167"))

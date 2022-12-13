@@ -87,67 +87,80 @@ func (a *Account) Update(account *Account) (err error) {
 	return
 }
 
-func (a *Account) GetDocument(document string) (*Account, error) {
+func (u *Account) GetDocument(document string) (account *Account, err error) {
 
 	var log = logger.New()
 
-	ctx := context.Background()
+	account = &Account{}
+	err = nil
 
-	a.Document = str.DocumentPad(document)
+	ctx := context.Background()
+	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.AccountDatabase)
-		return a, err
+		return nil, err
 	}
 
-	key := fmt.Sprintf("accounts:%v", a.Document)
-	res := redisClient.HMGet(ctx, key, "uuid", "document", "optins_cmr", "optins_cdu")
+	key := fmt.Sprintf("accounts:%v", document)
+	res := redisClient.HMGet(ctx, key, "uuid", "document", "status")
 	err = res.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o account com documento: %v.", a.Document)
-		return a, err
+		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		return u, err
 	}
 
-	err = res.Scan(a)
+	err = res.Scan(account)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um account válido. (%v)", a.Document)
-		return a, err
+		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		return nil, err
 	}
 
-	return a, err
+	if account.Status == Disabled {
+		account = &Account{Status: Disabled}
+		return account, nil
+	}
+
+	return account, nil
 }
 
-func (a *Account) GetByDocument(document string) (*Account, error) {
+func (a *Account) GetByDocument(document string) (account *Account, err error) {
 
 	var log = logger.New()
 
-	ctx := context.Background()
+	account = &Account{}
+	err = nil
 
+	ctx := context.Background()
 	document = str.DocumentPad(document)
-	a.Document = document
 
 	redisClient, err := redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.AccountDatabase)
-		return a, err
+		return nil, err
 	}
 
 	key := fmt.Sprintf("accounts:%v", document)
 	res := redisClient.HGetAll(ctx, key)
 	err = res.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o account com documento: %v.", document)
-		return a, err
+		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		return nil, err
 	}
 
-	err = res.Scan(a)
+	err = res.Scan(account)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um account válido. (%v)", document)
-		return a, err
+		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		return nil, err
 	}
 
-	return a, err
+	if account.Status == Disabled {
+		account = &Account{Status: Disabled}
+		return account, nil
+	}
+
+	return account, nil
 }
 
 func (a *Account) SaveOptins(account *Account) (err error) {

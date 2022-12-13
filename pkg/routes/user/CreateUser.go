@@ -24,10 +24,10 @@ func CreateUser(ctx *fiber.Ctx) error {
 
 	// TODO validar
 	// valida os campos de entrada
-	checkUser := userBody.Valid()
-	if checkUser.Status != 200 {
-		return response.Ctx(ctx).Result(checkUser)
-	}
+	// checkUser := userBody.Valid()
+	// if checkUser.Status != 200 {
+	// 	return response.Ctx(ctx).Result(checkUser)
+	// }
 
 	//!##################################################################################################################//
 	//! VERIFICA SE O DOCUMENTO DO USUÁRIO EXISTE NA BASE DE DADOS

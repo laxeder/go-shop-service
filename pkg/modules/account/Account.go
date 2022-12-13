@@ -30,16 +30,16 @@ func New(accountByte ...[]byte) (account *Account, err error) {
 	err = nil
 
 	if len(accountByte) == 0 {
-		return account, err
+		return
 	}
 
 	err = json.Unmarshal(accountByte[0], account)
 	if err != nil {
 		log.Error().Err(err).Msgf("O json do account está incorreto. %v", accountByte[0])
-		return account, err
+		return
 	}
 
-	return account, err
+	return
 }
 
 func (a *Account) SetDocument(document string) string {
