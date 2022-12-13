@@ -21,6 +21,7 @@ func ApiV1(app *fiber.App) {
 	route.Put("/user/:document", u.UpdateUser)
 	route.Get("/user/:document", u.ShowUser)
 	route.Post("/user", u.CreateUser)
+	route.Patch("/user", u.ListUsers)
 
 	route.Put("/address/document/:document", a.UpdateAddressDocument)
 	route.Put("/address/restore/:document", a.RestoreAddress)
@@ -28,6 +29,7 @@ func ApiV1(app *fiber.App) {
 	route.Put("/address/:document", a.UpdateAddress)
 	route.Get("/address/:document", a.ShowAddress)
 	route.Post("/address", a.CreateAddress)
+	route.Patch("/address", a.ListAddress)
 
 	route.Put("/account/document/:document", c.UpdateAccountDocument)
 	route.Put("/account/restore/:document", c.RestoreAccount)
@@ -35,6 +37,8 @@ func ApiV1(app *fiber.App) {
 	route.Put("/account/:document", c.UpdateAccount)
 	route.Get("/account/:document", c.ShowAccount)
 	route.Post("/account", c.CreateAccount)
+	route.Patch("/account", c.ListAccounts)
+
 }
 
 func ErrorNotFound(app *fiber.App) {
