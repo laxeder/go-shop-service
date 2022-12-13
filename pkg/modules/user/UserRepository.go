@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -32,6 +33,7 @@ func (u *User) Save(user *User) (err error) {
 	}
 
 	key := fmt.Sprintf("users:%v", document)
+
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uuid", user.Uuid)
 		rdb.HSet(ctx, key, "full_name", user.Fullname)
@@ -355,7 +357,7 @@ func (u *User) GetList() (users []User, err error) {
 
 	iter := redisClient.Scan(ctx, 0, "users:*", 0).Iterator()
 	for iter.Next(ctx) {
-		document := iter.Val()
+		document := strings.Replace(iter.Val(), "users:", "", 2)
 		user, uErr := u.GetByDocument(document)
 		if uErr != nil {
 			continue

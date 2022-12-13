@@ -20,8 +20,15 @@ func DeleteUser(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
 	}
 
+	// verifica o status do usuário
+	if userDatabase.Status != user.Enabled {
+		log.Error().Msgf("Este usuário já está desativado no sistema. (%v)", document)
+		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Esta usuário já está desativado no sistema."))
+	}
+
 	userDatabase.Status = user.Disabled
 	userDatabase.UpdatedAt = date.NowUTC()
+	userDatabase.Document = document
 
 	err = user.Repository().Delete(userDatabase)
 	if err != nil {

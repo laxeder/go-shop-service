@@ -30,8 +30,8 @@ func RestoreUser(ctx *fiber.Ctx) error {
 
 	// muda o status do usuário para ativo
 	userDatabase.Status = user.Enabled
-	userDatabase.Document = document
 	userDatabase.UpdatedAt = date.NowUTC()
+	userDatabase.Document = document
 
 	// salva as alterações na base de dados
 	err = user.Repository().Restore(userDatabase)

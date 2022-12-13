@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -19,9 +20,9 @@ func Repository() *Account {
 func (a *Account) Save(account *Account) (err error) {
 	var log = logger.New()
 
-	ctx := context.Background()
 	err = nil
 
+	ctx := context.Background()
 	document := str.DocumentPad(account.Document)
 
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
@@ -308,8 +309,9 @@ func (u *Account) GetList() (accounts []Account, err error) {
 
 	iter := redisClient.Scan(ctx, 0, "accounts:*", 0).Iterator()
 	for iter.Next(ctx) {
-		document := iter.Val()
+		document := strings.Replace(iter.Val(), "accounts:", "", 2)
 		account, uErr := u.GetByDocument(document)
+
 		if uErr != nil {
 			continue
 		}

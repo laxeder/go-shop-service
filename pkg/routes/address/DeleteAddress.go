@@ -20,8 +20,15 @@ func DeleteAddress(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
 	}
 
+	// verifica o status do endereço
+	if addressDatabase.Status != address.Enabled {
+		log.Error().Msgf("Este endereço já está desativado no sistema. (%v)", document)
+		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Este endereço já está desativado no sistema."))
+	}
+
 	addressDatabase.Status = address.Disabled
 	addressDatabase.UpdatedAt = date.NowUTC()
+	addressDatabase.Document = document
 
 	err = address.Repository().Delete(addressDatabase)
 	if err != nil {
