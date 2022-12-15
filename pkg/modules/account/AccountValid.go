@@ -39,12 +39,12 @@ func (a *Account) NicknameValid() *response.Result {
 
 	// 	if a.Nickname == "" {
 	// 		log.Error().Msgf("O campo do apelido não pode ser vazio. (%v)", a.Document)
-	// 		return response.Error(400, "BLC168", "O campo do apelido não pode ser vazio.")
+	// 		return response.Error(400, "GSS168", "O campo do apelido não pode ser vazio.")
 	// 	}
 
 	// 	if len(a.Nickname) <= 2 {
 	// 		log.Error().Msgf("O apelido não poder ser menor que 2 caracteres. (%v)", a.Document)
-	// 		return response.Error(400, "BLC169", "O apelido não poder ser menor que 2 caracteres.")
+	// 		return response.Error(400, "GSS169", "O apelido não poder ser menor que 2 caracteres.")
 	// 	}
 
 	// 	return response.Success(200)
@@ -55,12 +55,12 @@ func (a *Account) NicknameValid() *response.Result {
 
 	// 	if a.Profession == "" {
 	// 		log.Error().Msgf("O campo de profissão não pode ser vazio. (%v)", a.Document)
-	// 		return response.Error(400, "BLC170", "O campo de profissão não pode ser vazio.")
+	// 		return response.Error(400, "GSS170", "O campo de profissão não pode ser vazio.")
 	// 	}
 
 	// 	if len(a.Profession) <= 2 {
 	// 		log.Error().Msgf("O apelido não poder ser menor que 2 caracteres. (%v)", a.Document)
-	// 		return response.Error(400, "BLC171", "O apelido não poder ser menor que 2 caracteres.")
+	// 		return response.Error(400, "GSS171", "O apelido não poder ser menor que 2 caracteres.")
 	// 	}
 
 	return response.Success(200)
@@ -71,17 +71,17 @@ func (a *Account) RGValid() *response.Result {
 
 	// if a.RG == "" {
 	// 	log.Error().Msgf("O campo de RG não pode ser vazio. (%v)", a.Document)
-	// 	return response.Error(400, "BLC172", "O campo de RG não pode ser vazio.")
+	// 	return response.Error(400, "GSS172", "O campo de RG não pode ser vazio.")
 	// }
 
 	// if len(a.RG) <= 6 {
 	// 	log.Error().Msgf("O campo de RG não poder ser menor que 6 caracteres. (%v)", a.Document)
-	// 	return response.Error(400, "BLC173", "O campo de RG não poder ser menor que 6 caracteres.")
+	// 	return response.Error(400, "GSS173", "O campo de RG não poder ser menor que 6 caracteres.")
 	// }
 
 	// if regex.HasLetter.MatchString(a.RG) {
 	// 	log.Error().Msgf("O RG não pode conter letras. (%v)", a.Document)
-	// 	return response.Error(400, "BLC174", "O RG não pode conter letras.")
+	// 	return response.Error(400, "GSS174", "O RG não pode conter letras.")
 	// }
 
 	return response.Success(200)
@@ -92,12 +92,12 @@ func (a *Account) GenderValid() *response.Result {
 
 	// if a.Gender == "" {
 	// 	log.Error().Msgf("O campo de gênero não pode ser vazio. (%v)", a.Document)
-	// 	return response.Error(400, "BLC175", "O campo de gênero não pode ser vazio.")
+	// 	return response.Error(400, "GSS175", "O campo de gênero não pode ser vazio.")
 	// }
 
 	// if string(a.Gender) != string(Male) && string(a.Gender) != string(Female) {
 	// 	log.Error().Msgf("O opcao de sexo não está definida corretamente. (%v)", a.Document)
-	// 	return response.Error(400, "BLC176", "O opcao de sexo não está definida corretamente.")
+	// 	return response.Error(400, "GSS176", "O opcao de sexo não está definida corretamente.")
 	// }
 
 	return response.Success(200)
@@ -108,17 +108,17 @@ func (a *Account) BirthdayValid() *response.Result {
 
 	// if a.Birthday == "" {
 	// 	log.Error().Msgf("O campo de data de nascimento não pode ser vazio. (%v)", a.Document)
-	// 	return response.Error(400, "BLC177", "O campo de data de nascimento não pode ser vazio.")
+	// 	return response.Error(400, "GSS177", "O campo de data de nascimento não pode ser vazio.")
 	// }
 
 	// if !date.BRValid(a.Birthday) {
 	// 	log.Error().Msgf("O campo de data de nascimento não é uma data válida. (%v)", a.Document)
-	// 	return response.Error(400, "BLC178", "O campo de data de nascimento não é uma data válida.")
+	// 	return response.Error(400, "GSS178", "O campo de data de nascimento não é uma data válida.")
 	// }
 
 	// if time.Now().Sub(date.BRToTime(a.Birthday)).Hours() < 0 {
 	// 	log.Error().Msgf("O campo de data nascimento não pode estar no futuro. (%v)", a.Document)
-	// 	return response.Error(400, "BLC179", "O campo de data nascimento não pode estar no futuro.")
+	// 	return response.Error(400, "GSS179", "O campo de data nascimento não pode estar no futuro.")
 	// }
 
 	// var years float64 = 18
@@ -126,7 +126,7 @@ func (a *Account) BirthdayValid() *response.Result {
 
 	// if time.Now().Sub(date.BRToTime(a.Birthday)).Hours() < hoursIn18years {
 	// 	log.Error().Msgf("O campo de data nascimento não pode ser de um menor de idade. (%v)", a.Document)
-	// 	return response.Error(400, "BLC180", "O campo de data nascimento não pode ser de um menor de idade.")
+	// 	return response.Error(400, "GSS180", "O campo de data nascimento não pode ser de um menor de idade.")
 	// }
 
 	// var yearsOld float64 = 120
@@ -134,7 +134,7 @@ func (a *Account) BirthdayValid() *response.Result {
 
 	// if time.Now().Sub(date.BRToTime(a.Birthday)).Hours() > hoursIn120years {
 	// 	log.Error().Msgf("O campo de data de nascimento não pode ser maior que 120 anos. (%v)", a.Document)
-	// 	return response.Error(400, "BLC181", "O campo de data de nascimento não pode ser maior que 120 anos.")
+	// 	return response.Error(400, "GSS181", "O campo de data de nascimento não pode ser maior que 120 anos.")
 	// }
 
 	return response.Success(200)

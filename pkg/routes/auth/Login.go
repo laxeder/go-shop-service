@@ -14,7 +14,7 @@ func Login(ctx *fiber.Ctx) error {
 	// loginBody, err := auth.LogIn(body)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Os campos enviados estão incorretos."))
 	// }
 
 	// //!##################################################################################################################//

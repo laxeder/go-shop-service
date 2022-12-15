@@ -18,13 +18,13 @@ func DeleteUser(ctx *fiber.Ctx) error {
 
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
 	}
 
 	// verifica o status do usuário
 	if userDatabase.Status != user.Enabled {
 		log.Error().Msgf("Este usuário já está desativado no sistema. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Esta usuário já está desativado no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Esta usuário já está desativado no sistema."))
 	}
 
 	userDatabase.Uuid = uuid
@@ -34,7 +34,7 @@ func DeleteUser(ctx *fiber.Ctx) error {
 	err = user.Repository().Delete(userDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC090"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

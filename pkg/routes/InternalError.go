@@ -7,5 +7,5 @@ import (
 
 // rota do erro 500
 func internalError(ctx *fiber.Ctx) error {
-	return response.Ctx(ctx).Result(response.ErrorDefault("BLC001"))
+	return response.Ctx(ctx).Result(response.ErrorDefault("GSS001"))
 }

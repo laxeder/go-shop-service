@@ -23,19 +23,19 @@ func UpdateProductUid(ctx *fiber.Ctx) error {
 	err := json.Unmarshal(body, productUid)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados enviados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC091", "O formado dos dados enviados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS091", "O formado dos dados enviados está incorreto."))
 	}
 
 	// carrega os dados do produto da base de dados
 	productDatabase, err := product.Repository().GetUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Produto não encontrado %v.", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC093"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS093"))
 	}
 
 	if productUid.OldUid != productDatabase.Uid {
 		log.Error().Err(err).Msgf("Uid antigo errado %v.", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC091", "uid antigo está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS091", "uid antigo está incorreto."))
 	}
 
 	// define o novo uid
@@ -46,7 +46,7 @@ func UpdateProductUid(ctx *fiber.Ctx) error {
 	err = product.Repository().SaveUid(uid, productDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar atualizar o repositório do produto %v", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC096"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS096"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

@@ -15,13 +15,13 @@ func SignAccountOptins(ctx *fiber.Ctx) error {
 	// accountData, err := account.Repository().GetDocument(document)
 	// if err != nil {
 	// 	log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC101"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS101"))
 	// }
 
 	// // verifica se o usuário tem uma assinatura á confirmada
 	// if accountData.Optins {
 	// 	log.Error().Msgf("A assinatura de optins já foi feita para esta conta. (%v)", document)
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC110", "A assinatura de optins já foi feita para esta conta."))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS110", "A assinatura de optins já foi feita para esta conta."))
 	// }
 
 	// // confirma a assinatura
@@ -32,7 +32,7 @@ func SignAccountOptins(ctx *fiber.Ctx) error {
 	// err = account.Repository().SaveOptins(accountData)
 	// if err != nil {
 	// 	log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC102"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS102"))
 	// }
 
 	return response.Ctx(ctx).Result(response.Success(204))

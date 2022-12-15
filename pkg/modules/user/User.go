@@ -26,7 +26,7 @@ type User struct {
 	Salt            string   `json:"salt,omitempty" redis:"salt,omitempty"`
 	Status          Status   `json:"status,omitempty" redis:"status,omitempty"`
 	Adresses        []string `json:"adresses,omitempty" redis:"adresses,omitempty"`
-	Accounts        []string `json:"account,omitempty" redis:"account,omitempty"`
+	Accounts        []string `json:"accounts,omitempty" redis:"accounts,omitempty"`
 	CreatedAt       string   `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt       string   `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }

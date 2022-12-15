@@ -59,6 +59,8 @@ func (a *Account) Save(account *Account) (err error) {
 		return
 	}
 
+	fmt.Print((userDatabase.Accounts))
+
 	userDatabase.Accounts = append(userDatabase.Accounts, account.Uid)
 	userDatabase.UpdatedAt = date.NowUTC()
 

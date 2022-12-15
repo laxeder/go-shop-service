@@ -16,7 +16,7 @@ func ShowAddress(ctx *fiber.Ctx) error {
 	addressData, err := address.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos., %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, addressData))

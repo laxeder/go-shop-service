@@ -71,27 +71,27 @@ func (u *User) TelephoneValid() *response.Result {
 
 	// if u.Telephone == "" {
 	// 	log.Error().Msgf("O campo do email não pode ser vazio. (%v)", u.Document)
-	// 	return response.Error(400, "BLC018", "O campo telefone não pode ser vazio.")
+	// 	return response.Error(400, "GSS018", "O campo telefone não pode ser vazio.")
 	// }
 
 	// if len(u.Telephone) < 11 {
 	// 	log.Error().Msgf("O telefone não poder ser menor que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX. (%v)", u.Document)
-	// 	return response.Error(400, "BLC019", "O telefone não poder ser menor que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX.")
+	// 	return response.Error(400, "GSS019", "O telefone não poder ser menor que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX.")
 	// }
 
 	// if len(u.Telephone) > 15 {
 	// 	log.Error().Msgf("O telefone não poder ser maior que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX. (%v)", u.Document)
-	// 	return response.Error(400, "BLC020", "O telefone não poder ser maior que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX.")
+	// 	return response.Error(400, "GSS020", "O telefone não poder ser maior que 11 números. Favor manter o fomrmato (XX) XXXXX-XXX.")
 	// }
 
 	// if regex.HasLetter.MatchString(u.Telephone) {
 	// 	log.Error().Msgf("O telefone não poder pode conter letras. (%v)", u.Document)
-	// 	return response.Error(400, "BLC021", "O telefone não poder pode conter letras.")
+	// 	return response.Error(400, "GSS021", "O telefone não poder pode conter letras.")
 	// }
 
 	// if regex.HasCharSpecialsToPhone.MatchString(u.Telephone) {
 	// 	log.Error().Msgf("O telefone não poder pode conter letras especiais ou acentuação. (%v)", u.Document)
-	// 	return response.Error(400, "BLC022", "O telefone não poder pode conter letras especiais ou acentuação.")
+	// 	return response.Error(400, "GSS022", "O telefone não poder pode conter letras especiais ou acentuação.")
 	// }
 
 	return response.Success(200)
@@ -108,12 +108,12 @@ func (u *User) ConfirmPasswordValid() *response.Result {
 
 	// if u.ConfirmPassword == "" {
 	// 	log.Error().Msgf("O campo confirmar senha não pode ser vazio. (%v)", u.Document)
-	// 	return response.Error(400, "BLC029", "O campo confirmar senha não pode ser vazio.")
+	// 	return response.Error(400, "GSS029", "O campo confirmar senha não pode ser vazio.")
 	// }
 
 	// if u.Password != u.ConfirmPassword {
 	// 	log.Error().Msgf("O campo confirmar senha deve ser idêntico ao da senha. (%v)", u.Document)
-	// 	return response.Error(400, "BLC030", "O campo confirmar senha deve ser idêntico ao da senha.")
+	// 	return response.Error(400, "GSS030", "O campo confirmar senha deve ser idêntico ao da senha.")
 	// }
 
 	return response.Success(200)

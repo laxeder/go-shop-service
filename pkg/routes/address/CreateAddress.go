@@ -19,7 +19,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	addressBody, err := address.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Os campos enviados estão incorretos."))
 	}
 
 	// // TODO validar
@@ -35,19 +35,19 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	addressDatabase, err := address.Repository().GetUid(addressBody.Uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
 	}
 
 	// verifica se a conta está desabilitada
 	if addressDatabase.Status == address.Disabled {
 		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC032", "Esta conta está desabilitada por tempo indeterminado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS032", "Esta conta está desabilitada por tempo indeterminado."))
 	}
 
 	// verifica se o documento existe
 	if len(addressDatabase.Uid) > 0 {
 		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC034", "Este documento já existe na nossa base de dados."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS034", "Este documento já existe na nossa base de dados."))
 	}
 
 	//!##################################################################################################################//
@@ -65,7 +65,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	err = address.Repository().Save(addressBody)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do endereço %v", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC003"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS003"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))

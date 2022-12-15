@@ -15,13 +15,13 @@ func UnsignAccountOptins(ctx *fiber.Ctx) error {
 	// accountData, err := account.Repository().GetDocument(document)
 	// if err != nil {
 	// 	log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC095"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS095"))
 	// }
 
 	// // verifica se existe uma assinatura confirmada
 	// if !accountData.Optins {
 	// 	log.Error().Msgf("A assinatura de optins já está inativa. (%v)", document)
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC098", "A assinatura de optins já está inativa."))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS098", "A assinatura de optins já está inativa."))
 	// }
 
 	// // desassina o direito de emitor CDu
@@ -32,7 +32,7 @@ func UnsignAccountOptins(ctx *fiber.Ctx) error {
 	// err = account.Repository().SaveOptins(accountData)
 	// if err != nil {
 	// 	log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC099"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS099"))
 	// }
 
 	return response.Ctx(ctx).Result(response.Success(204))

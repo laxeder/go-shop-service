@@ -16,14 +16,14 @@ func CreateICP(ctx *fiber.Ctx) error {
 	// icpBody, err := icp.New(body)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("O formado dos dados envidados está incorreto.")
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC238", "O formado dos dados envidados está incorreto."))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS238", "O formado dos dados envidados está incorreto."))
 	// }
 
 	// spew.Dump(document, icpBody)
 	// // valia se os documentos combinam
 	// if str.DocumentPad(document) != str.DocumentPad(icpBody.Document) {
 	// 	log.Error().Msg("O documento passado não corresponde ao documento do usuário." + icpBody.Document)
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC239", "O documento passado não corresponde ao documento do usuário. "+icpBody.Document))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS239", "O documento passado não corresponde ao documento do usuário. "+icpBody.Document))
 	// }
 
 	// // valida os campos de entrada
@@ -38,13 +38,13 @@ func CreateICP(ctx *fiber.Ctx) error {
 	// icpData, err := icp.Repository().GetByDocument(icpBody.Document)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("Erro ao tentar encontrar um icp para o usuário " + document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC240"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS240"))
 	// }
 
 	// // verifica se um documento e um serial number de certificado existe para este usuário
 	// if len(icpData.Document) > 0 && len(icpData.SerialNumber) > 0 {
 	// 	log.Error().Msg("Este certificado já existe na nossa base de dados.")
-	// 	return response.Ctx(ctx).Result(response.Error(400, "BLC241", "Este certificado já existe na nossa base de dados."))
+	// 	return response.Ctx(ctx).Result(response.Error(400, "GSS241", "Este certificado já existe na nossa base de dados."))
 	// }
 
 	// // ! #############################################################################################################################
@@ -61,7 +61,7 @@ func CreateICP(ctx *fiber.Ctx) error {
 	// err = icp.Repository().Save(icpBody)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("error ao tentar salvar a ICP do usuário." + icpBody.Document)
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC242"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS242"))
 	// }
 
 	return response.Ctx(ctx).Result(response.Success(201))

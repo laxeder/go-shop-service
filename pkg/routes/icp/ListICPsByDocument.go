@@ -12,7 +12,7 @@ func ListICPsByDocument(ctx *fiber.Ctx) error {
 	// icpsData, err := icp.Repository().GetList()
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("Erro ao tentar listar certificados.")
-	// 	return response.Ctx(ctx).Result(response.ErrorDefault("BLC246"))
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS246"))
 	// }
 
 	// return response.Ctx(ctx).Result(response.Success(200, icpsData))

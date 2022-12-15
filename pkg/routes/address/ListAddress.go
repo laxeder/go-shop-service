@@ -14,7 +14,7 @@ func ListAddress(ctx *fiber.Ctx) error {
 	addresss, err := address.Repository().GetList()
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar listar endereços, %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, addresss))

@@ -19,7 +19,7 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	accountBody, err := account.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC104", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS104", "O formado dos dados envidados está incorreto."))
 	}
 
 	//TODO:validar campo account
@@ -35,25 +35,25 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	accountData, err := account.Repository().GetByUid(accountBody.Uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar encontrar a conta %v no repositório", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC105"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS105"))
 	}
 
 	// verifica se a conta está desabilitada
 	if accountData.Status == account.Disabled {
 		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC032", "Esta conta está desabilitada por tempo indeterminado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS032", "Esta conta está desabilitada por tempo indeterminado."))
 	}
 
 	// verifica se existe uma uuid válida
 	if len(accountData.Uuid) > 0 {
 		log.Error().Msgf("Este documento já existe na nossa base de dados. (%v)", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC106", "Este documento já existe na nossa base de dados."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS106", "Este documento já existe na nossa base de dados."))
 	}
 
 	// verifica se o documento existe
 	if len(accountData.Uuid) > 0 {
 		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC034", "Este documento já existe na nossa base de dados."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS034", "Este documento já existe na nossa base de dados."))
 	}
 
 	//!##################################################################################################################//
@@ -68,7 +68,7 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	err = account.Repository().Save(accountBody)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC107"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS107"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))

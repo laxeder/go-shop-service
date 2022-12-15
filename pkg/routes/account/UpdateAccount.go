@@ -20,7 +20,7 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	accountBody, err := account.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC164", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS164", "O formado dos dados envidados está incorreto."))
 	}
 
 	// valida os campos enviados
@@ -34,7 +34,7 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	accountDatabase, err := account.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC081", "Erro ao tentar validar usuário."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS081", "Erro ao tentar validar usuário."))
 	}
 
 	// formata a atualização
@@ -46,7 +46,7 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	err = account.Repository().Update(accountDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC167"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS167"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

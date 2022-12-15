@@ -19,7 +19,7 @@ func CreateProduct(ctx *fiber.Ctx) error {
 	productBody, err := product.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Os campos enviados estão incorretos."))
 	}
 
 	// Cria um ID para o produto
@@ -31,19 +31,19 @@ func CreateProduct(ctx *fiber.Ctx) error {
 	productDatabase, err := product.Repository().GetUid(productBody.Uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
 	}
 
 	// verifica se o produto está desabilitado
 	if productDatabase.Status == product.Disabled {
 		log.Error().Msgf("Este produto (%v) está desabilitado por tempo indeterminado.", productBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC032", "Este produto está desabilitado por tempo indeterminado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS032", "Este produto está desabilitado por tempo indeterminado."))
 	}
 
 	// verifica se o produto existe
 	if len(productDatabase.Uid) > 0 {
 		log.Error().Msgf("Este produto (%v) já existe na nossa base de dados.", productBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC034", "Este produto já existe na nossa base de dados."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS034", "Este produto já existe na nossa base de dados."))
 	}
 
 	//!##################################################################################################################//
@@ -58,7 +58,7 @@ func CreateProduct(ctx *fiber.Ctx) error {
 	err = product.Repository().Save(productBody)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do produtos %v", productBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC003"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS003"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))

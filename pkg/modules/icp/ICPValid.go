@@ -62,7 +62,7 @@ func (i *ICP) KeyPublicValid() *response.Result {
 
 	if len(i.KeyPublic) < 64 {
 		log.Error().Msgf("A chave pública precisa ter no mínomo 64 caracteres. (%v)", i.Document)
-		return response.Error(400, "BLC224", "A chave pública precisa ter no mínomo 64 caracteres.")
+		return response.Error(400, "GSS224", "A chave pública precisa ter no mínomo 64 caracteres.")
 	}
 
 	return response.Success(200)
@@ -81,7 +81,7 @@ func (i *ICP) ValidateValid() *response.Result {
 
 	if !date.BRValid(i.Validate) {
 		log.Error().Msgf("Data de validate do certificado está inválida: (%v)", i.Document)
-		return response.Error(400, "BLC230", "Data de validate do certificado está inválida.")
+		return response.Error(400, "GSS230", "Data de validate do certificado está inválida.")
 	}
 
 	return response.Success(200)
@@ -97,12 +97,12 @@ func (i *ICP) SerialNumberValid() *response.Result {
 
 	if i.SerialNumber == "" {
 		log.Error().Msgf("O numero de serie do certificado não pode ser vazio. (%v)", i.Document)
-		return response.Error(400, "BLC234", "O numero de serie do certificadonão pode ser vazio.")
+		return response.Error(400, "GSS234", "O numero de serie do certificadonão pode ser vazio.")
 	}
 
 	if len(i.SerialNumber) <= 18 {
 		log.Error().Msgf("O numero de serie do certificado não poder ser menor que 18 caracteres. (%v)", i.Document)
-		return response.Error(400, "BLC235", "O numero de serie do certificado não poder ser menor que 18 caracteres.")
+		return response.Error(400, "GSS235", "O numero de serie do certificado não poder ser menor que 18 caracteres.")
 	}
 
 	return response.Success(200)
@@ -114,12 +114,12 @@ func (i *ICP) DigitalSignatureValid() *response.Result {
 
 	if i.DigitalSignature == "" {
 		log.Error().Msgf("A assinatura digital da autoridade certificadora não pode ser vazia. (%v)", i.Document)
-		return response.Error(400, "BLC236", "A assinatura digital da autoridade certificadora não pode ser vazia.")
+		return response.Error(400, "GSS236", "A assinatura digital da autoridade certificadora não pode ser vazia.")
 	}
 
 	if len(i.DigitalSignature) <= 18 {
 		log.Error().Msgf("A assinatura digital da autoridade certificadorao não poder ser menor que 18 caracteres. (%v)", i.Document)
-		return response.Error(400, "BLC237", "A assinatura digital da autoridade certificadora não poder ser menor que 18 caracteres.")
+		return response.Error(400, "GSS237", "A assinatura digital da autoridade certificadora não poder ser menor que 18 caracteres.")
 	}
 
 	return response.Success(200)

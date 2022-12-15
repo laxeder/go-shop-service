@@ -18,13 +18,13 @@ func RestoreAddress(ctx *fiber.Ctx) error {
 	addressDatabase, err := address.Repository().GetUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar endereço. (%v)", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC097"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS097"))
 	}
 
 	// verifica o status do endereço
 	if addressDatabase.Status != address.Disabled {
 		log.Error().Msgf("Este endereço já está ativo no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Este endereço já está ativo no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este endereço já está ativo no sistema."))
 	}
 
 	// muda o status do endereço para ativo
@@ -36,7 +36,7 @@ func RestoreAddress(ctx *fiber.Ctx) error {
 	err = address.Repository().Restore(addressDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "BLC100", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS100", "O formado dos dados envidados está incorreto."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

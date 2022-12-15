@@ -30,7 +30,7 @@ func LoginCheck(login *auth.Login) (userData *user.User, result *response.Result
 
 	if user.Password != userData.Password {
 		log.Error().Msgf("A senha está incorreta. Favor tentar outra senha. (%v)", login.Document)
-		result = response.Error(400, "BLC261", "A senha está incorreta. Favor tentar outra senha.")
+		result = response.Error(400, "GSS261", "A senha está incorreta. Favor tentar outra senha.")
 		return
 	}
 
