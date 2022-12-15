@@ -39,7 +39,7 @@ func New(userByte ...[]byte) (user *User, err error) {
 
 	err = json.Unmarshal(userByte[0], user)
 	if err != nil {
-		log.Error().Err(err).Msgf("O json do usuário está incorreto. %v", userByte[0])
+		log.Error().Err(err).Msgf("O json do usuário está incorreto. %s", userByte[0])
 		return
 	}
 

@@ -21,7 +21,7 @@ func DeleteAccount(ctx *fiber.Ctx) error {
 	}
 
 	// verifica o status da conta
-	if accountDatabase.Status != account.Enabled {
+	if accountDatabase.Status == account.Disabled {
 		log.Error().Msgf("Esta conta já está desativado no sistema. (%v)", document)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Esta conta já está desativado no sistema."))
 	}

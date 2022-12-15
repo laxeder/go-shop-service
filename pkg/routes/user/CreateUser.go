@@ -18,8 +18,8 @@ func CreateUser(ctx *fiber.Ctx) error {
 	// transforma o json em Struct
 	userBody, err := user.New(body)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
-		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos ou json está mal formatado. %s", userBody)
+		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos ou json está mal formatado."))
 	}
 
 	// TODO validar
@@ -34,7 +34,7 @@ func CreateUser(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	userDatabase, err := user.Repository().GetDocument(userBody.Document)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msg("Os campos enviados estão incorretos.") // passar o documento
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
 	}
 

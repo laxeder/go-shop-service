@@ -30,11 +30,11 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	// }
 
 	//!##################################################################################################################//
-	//! VERIFICA SE O DOCUMENTO DO USUÁRIO EXISTE NA BASE DE DADOS 														 //
+	//! VERIFICA SE O DOCUMENTO DA CONTA EXISTE NA BASE DE DADOS 														 //
 	//!##################################################################################################################//
 	accountData, err := account.Repository().GetDocument(accountBody.Document)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", accountBody.Document)
+		log.Error().Err(err).Msgf("Erro ao tentar encontrar a conta %v no repositório", accountBody.Document)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC105"))
 	}
 
@@ -48,6 +48,12 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	if len(accountData.Uuid) > 0 {
 		log.Error().Msgf("Este documento já existe na nossa base de dados. (%v)", accountBody.Document)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC106", "Este documento já existe na nossa base de dados."))
+	}
+
+	// verifica se o documento existe
+	if len(accountData.Document) > 0 {
+		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", accountBody.Document)
+		return response.Ctx(ctx).Result(response.Error(400, "BLC034", "Este documento já existe na nossa base de dados."))
 	}
 
 	//!##################################################################################################################//

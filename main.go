@@ -28,13 +28,9 @@ func main() {
 /*
  ! Objetivo: criar plataforma E-commerc loja virtual
 
- ? Sistema de usuário: User CRUD
- ? Sistema de endereços: Address CRUD
- ? Sitema de conta: Account CRUD
  ? Sistema de contatos: Contacts CRUD
  ? Sistema de login: Auth JWT
 
- ? Sistema de produtos: Product CRUD
  ? Sistema de categorias: Product CRUD
  ? Sistema de compras: Buy CRUD
  ? Sistema de favoritos (factory buy)
@@ -52,9 +48,9 @@ func main() {
 
  ? Sistema de pagamento: integração do sistem de pagamento
 
- ** CRUD
- * Product name
- * Product description
- * Product preço
- * Product count
+	* listar produto por categoria
+	* rota --> listar produto por categoria
+	* listar produto por ordem alfabetica
+	* listar produto por ordem de preço
+	* listar produto por data de criação
 */

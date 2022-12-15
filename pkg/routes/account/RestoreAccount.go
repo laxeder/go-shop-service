@@ -15,7 +15,7 @@ func RestoreAccount(ctx *fiber.Ctx) error {
 
 	document := ctx.Params("document")
 
-	// carrega a conta de usurário com base no documento
+	// carrega a conta do usuário com base no documento
 	accountDatabase, err := account.Repository().GetDocument(document)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar conta. (%v)", document)
@@ -23,8 +23,8 @@ func RestoreAccount(ctx *fiber.Ctx) error {
 	}
 
 	// verifica o status do conta
-	if accountDatabase.Status != account.Disabled {
-		log.Error().Msgf("Este conta já está ativo no sistema. (%v)", document)
+	if accountDatabase.Status == account.Enabled {
+		log.Error().Msgf("Este conta já está ativada no sistema. (%v)", document)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Este conta já está ativo no sistema."))
 	}
 

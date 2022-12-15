@@ -17,9 +17,15 @@ func Repository() *Product {
 	return &Product{}
 }
 
-func MarshalBinary(str []string) (data []byte, err error) {
-	bytes, err := json.Marshal(str)
-	return bytes, err
+func MarshalBinary(str []string) (data []byte) {
+	var log = logger.New()
+
+	data, err := json.Marshal(str)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tranformar array em bytes %s", str)
+	}
+
+	return
 }
 
 func (a *Product) Save(product *Product) (err error) {
@@ -35,15 +41,15 @@ func (a *Product) Save(product *Product) (err error) {
 	}
 
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categorys, err := MarshalBinary(product.Categorys)
-	pictures, err := MarshalBinary(product.Pictures)
+	categories := MarshalBinary(product.Categories)
+	pictures := MarshalBinary(product.Pictures)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uid", product.Uid)
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "categorys", categorys)
+		rdb.HSet(ctx, key, "categories", categories)
 		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
@@ -75,15 +81,15 @@ func (a *Product) Update(product *Product) (err error) {
 	}
 
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categorys, err := MarshalBinary(product.Categorys)
-	pictures, err := MarshalBinary(product.Pictures)
+	categories := MarshalBinary(product.Categories)
+	pictures := MarshalBinary(product.Pictures)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uid", product.Uid)
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "categorys", categorys)
+		rdb.HSet(ctx, key, "categories", categories)
 		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
@@ -196,7 +202,7 @@ func (u *Product) SaveUid(uid string, product *Product) (err error) {
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", product.Pictures)
-		rdb.HSet(ctx, key, "categorys", product.Categorys)
+		rdb.HSet(ctx, key, "categories", product.Categories)
 		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)

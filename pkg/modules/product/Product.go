@@ -13,7 +13,7 @@ type Product struct {
 	Name        string   `json:"name,omitempty" redis:"name,omitempty"`
 	Description string   `json:"description,omitempty" redis:"description,omitempty"`
 	Pictures    []string `json:"pictures,omitempty" redis:"pictures,omitempty"`
-	Categorys   []string `json:"categorys,omitempty" redis:"categorys,omitempty"`
+	Categories  []string `json:"categories,omitempty" redis:"categories,omitempty"`
 	Price       string   `json:"price,omitempty" redis:"price,omitempty"`
 	Promotion   string   `json:"promotion,omitempty" redis:"promotion,omitempty"`
 	Code        string   `json:"code,omitempty" redis:"code,omitempty"`
@@ -69,8 +69,8 @@ func (p *Product) SetDescription(description string) string {
 }
 
 func (p *Product) SetCategorys(categorys []string) []string {
-	p.Categorys = categorys
-	return p.Categorys
+	p.Categories = categorys
+	return p.Categories
 }
 
 func (p *Product) SetPictures(pictures []string) []string {
@@ -134,8 +134,8 @@ func (p *Product) Inject(product *Product) *Product {
 		p.Description = product.Description
 	}
 
-	if fmt.Sprintf(" %T", product.Categorys) != "[]string" {
-		p.Categorys = product.Categorys
+	if fmt.Sprintf(" %T", product.Categories) != "[]string" {
+		p.Categories = product.Categories
 	}
 
 	if fmt.Sprintf(" %T", product.Pictures) != "[]string" {
