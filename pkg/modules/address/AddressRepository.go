@@ -295,7 +295,7 @@ func (u *Address) GetList() (addresss []Address, err error) {
 
 	err = iter.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível listar os endereços do banco de dados.")
+		log.Error().Err(err).Msgf("Não foi possível listar os endereços do banco de dados. %v", err)
 		return nil, err
 	}
 

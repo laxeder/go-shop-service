@@ -18,7 +18,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	// transforma o json em Struct
 	addressBody, err := address.New(body)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
 	}
 
@@ -34,7 +34,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	addressDatabase, err := address.Repository().GetDocument(addressBody.Document)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
 	}
 

@@ -16,7 +16,7 @@ func DeleteAccount(ctx *fiber.Ctx) error {
 
 	accountDatabase, err := account.Repository().GetDocument(document)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
 	}
 
@@ -32,7 +32,7 @@ func DeleteAccount(ctx *fiber.Ctx) error {
 
 	err = account.Repository().Delete(accountDatabase)
 	if err != nil {
-		log.Error().Err(err).Msg("O formado dos dados envidados está incorreto.")
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC090"))
 	}
 

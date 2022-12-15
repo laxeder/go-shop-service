@@ -18,7 +18,7 @@ func CreateProduct(ctx *fiber.Ctx) error {
 	// transforma o json em Struct
 	productBody, err := product.New(body)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC002", "Os campos enviados estão incorretos."))
 	}
 
@@ -30,7 +30,7 @@ func CreateProduct(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	productDatabase, err := product.Repository().GetUid(productBody.Uid)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
 	}
 

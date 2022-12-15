@@ -52,7 +52,7 @@ func New() (jwtData *JWT) {
 	// token, err := tokenData.SignedString([]byte(jwtData.PrivateKey))
 	token, err := tokenData.SignedString([]byte("secret"))
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possivel assinar o token. %v")
+		log.Error().Err(err).Msgf("Não foi possivel assinar o token. %v", err)
 	}
 
 	jwtData.Token = token

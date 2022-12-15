@@ -217,7 +217,7 @@ func (i *Image) GetList() (images []Image, err error) {
 
 	err = iter.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível listar as imagens do banco de dados.")
+		log.Error().Err(err).Msgf("Não foi possível listar as imagens do banco de dados. %v", err)
 		return
 	}
 

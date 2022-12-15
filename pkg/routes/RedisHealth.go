@@ -13,7 +13,7 @@ func RedisHealth(ctx *fiber.Ctx) error {
 
 	result, err := redisdb.Health()
 	if err != nil {
-		log.Error().Err(err).Msg("O banco de dados esát offline")
+		log.Error().Err(err).Msg("O banco de dados está offline")
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC117"))
 	}
 

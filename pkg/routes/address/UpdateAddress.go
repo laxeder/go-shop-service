@@ -19,7 +19,7 @@ func UpdateAddress(ctx *fiber.Ctx) error {
 	// converte json para struct
 	addressBody, err := address.New(body)
 	if err != nil {
-		log.Error().Err(err).Msg("O formado dos dados envidados está incorreto.")
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC085", "O formado dos dados envidados está incorreto."))
 	}
 

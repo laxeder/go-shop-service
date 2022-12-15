@@ -374,7 +374,7 @@ func (u *User) GetList() (users []User, err error) {
 
 	err = iter.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível listar os usuários do banco de dados.")
+		log.Error().Err(err).Msgf("Não foi possível listar os usuários do banco de dados. %v", err)
 		return nil, err
 	}
 

@@ -16,7 +16,7 @@ func ShowProduct(ctx *fiber.Ctx) error {
 	// carega um produto da base de dados
 	productData, err := product.Repository().GetByUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.")
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC035"))
 	}
 

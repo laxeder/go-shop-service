@@ -34,7 +34,7 @@ func CreateUser(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	userDatabase, err := user.Repository().GetDocument(userBody.Document)
 	if err != nil {
-		log.Error().Err(err).Msg("Os campos enviados estão incorretos.") // passar o documento
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err) // passar o documento
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
 	}
 
