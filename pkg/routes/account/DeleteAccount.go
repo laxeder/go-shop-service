@@ -12,9 +12,9 @@ import (
 func DeleteAccount(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uid := ctx.Params("uid")
 
-	accountDatabase, err := account.Repository().GetDocument(document)
+	accountDatabase, err := account.Repository().GetUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
@@ -22,13 +22,13 @@ func DeleteAccount(ctx *fiber.Ctx) error {
 
 	// verifica o status da conta
 	if accountDatabase.Status == account.Disabled {
-		log.Error().Msgf("Esta conta já está desativado no sistema. (%v)", document)
+		log.Error().Msgf("Esta conta já está desativado no sistema. (%v)", uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Esta conta já está desativado no sistema."))
 	}
 
+	accountDatabase.Uid = uid
 	accountDatabase.Status = account.Disabled
 	accountDatabase.UpdatedAt = date.NowUTC()
-	accountDatabase.Document = document
 
 	err = account.Repository().Delete(accountDatabase)
 	if err != nil {

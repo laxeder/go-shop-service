@@ -11,10 +11,9 @@ import (
 func ShowAddress(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uid := ctx.Params("uid")
 
-	// carega um endereço da base de dados
-	addressData, err := address.Repository().GetByDocument(document)
+	addressData, err := address.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos., %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC035"))

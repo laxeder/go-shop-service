@@ -16,7 +16,7 @@ func RestoreProduct(ctx *fiber.Ctx) error {
 	uid := ctx.Params("uid")
 
 	// carrega o produto com base no uid
-	productDatabase, err := product.Repository().GetUid(uid)
+	productDatabase, err := product.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar produto. (%v)", uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC097"))

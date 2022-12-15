@@ -32,7 +32,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	//! VERIFICA SE O DOCUMENTO DO ENDEREÇO EXISTE NA BASE DE DADOS
 	//!##################################################################################################################//
-	addressDatabase, err := address.Repository().GetDocument(addressBody.Document)
+	addressDatabase, err := address.Repository().GetUid(addressBody.Uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
@@ -40,13 +40,13 @@ func CreateAddress(ctx *fiber.Ctx) error {
 
 	// verifica se a conta está desabilitada
 	if addressDatabase.Status == address.Disabled {
-		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", addressBody.Document)
+		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", addressBody.Uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC032", "Esta conta está desabilitada por tempo indeterminado."))
 	}
 
 	// verifica se o documento existe
-	if len(addressDatabase.Document) > 0 {
-		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", addressBody.Document)
+	if len(addressDatabase.Uid) > 0 {
+		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", addressBody.Uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC034", "Este documento já existe na nossa base de dados."))
 	}
 
@@ -55,7 +55,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 
 	// cria um novo endereço
-	addressBody.NewUuid()
+	addressBody.NewUid()
 
 	addressBody.Status = address.Enabled
 	addressBody.CreatedAt = date.NowUTC()
@@ -64,7 +64,7 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	// armazena o endereço na base de dados
 	err = address.Repository().Save(addressBody)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar repositório do endereço %v", addressBody.Document)
+		log.Error().Err(err).Msgf("Erro ao acessar repositório do endereço %v", addressBody.Uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC003"))
 	}
 

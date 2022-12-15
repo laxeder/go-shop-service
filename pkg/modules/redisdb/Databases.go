@@ -3,9 +3,9 @@ package redisdb
 type Nodedatabase int
 
 const (
-	UserDatabase    Nodedatabase = 0
-	Bridge          Nodedatabase = 1
-	AddressDatabase Nodedatabase = 2
-	AccountDatabase Nodedatabase = 3
-	ProductDatabase Nodedatabase = 4
+	Bridge          Nodedatabase = 0
+	UserDatabase    Nodedatabase = 1
+	AddressDatabase Nodedatabase = 1
+	AccountDatabase Nodedatabase = 1
+	ProductDatabase Nodedatabase = 2
 )

@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 type Product struct {
-	Uid         string   `json:"uid,omitempty" redis:"uid,omitempty"`
-	Name        string   `json:"name,omitempty" redis:"name,omitempty"`
-	Description string   `json:"description,omitempty" redis:"description,omitempty"`
-	Pictures    []string `json:"pictures,omitempty" redis:"pictures,omitempty"`
-	Categories  []string `json:"categories,omitempty" redis:"categories,omitempty"`
-	Price       string   `json:"price,omitempty" redis:"price,omitempty"`
-	Promotion   string   `json:"promotion,omitempty" redis:"promotion,omitempty"`
-	Code        string   `json:"code,omitempty" redis:"code,omitempty"`
-	Weight      string   `json:"weight,omitempty" redis:"weight,omitempty"`
-	Color       string   `json:"color,omitempty" redis:"color,omitempty"`
-	Status      Status   `json:"status,omitempty" redis:"status,omitempty"`
-	CreatedAt   string   `json:"created_at,omitempty" redis:"created_at,omitempty"`
-	UpdatedAt   string   `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
+	Uid         string       `json:"uid,omitempty" redis:"uid,omitempty"`
+	Name        string       `json:"name,omitempty" redis:"name,omitempty"`
+	Description string       `json:"description,omitempty" redis:"description,omitempty"`
+	Pictures    []string     `json:"pictures,omitempty" redis:"pictures,omitempty"`
+	Categories  []Categories `json:"categories,omitempty" redis:"categories,omitempty"`
+	Price       string       `json:"price,omitempty" redis:"price,omitempty"`
+	Promotion   string       `json:"promotion,omitempty" redis:"promotion,omitempty"`
+	Code        string       `json:"code,omitempty" redis:"code,omitempty"`
+	Weight      string       `json:"weight,omitempty" redis:"weight,omitempty"`
+	Color       string       `json:"color,omitempty" redis:"color,omitempty"`
+	Status      Status       `json:"status,omitempty" redis:"status,omitempty"`
+	CreatedAt   string       `json:"created_at,omitempty" redis:"created_at,omitempty"`
+	UpdatedAt   string       `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
 func New(productByte ...[]byte) (product *Product, err error) {
@@ -44,7 +44,7 @@ func New(productByte ...[]byte) (product *Product, err error) {
 }
 
 func (p *Product) NewUid() string {
-	p.Uid = uuid.New().String()
+	p.Uid = utils.Nonce()
 	return p.Uid
 }
 
@@ -68,8 +68,8 @@ func (p *Product) SetDescription(description string) string {
 	return p.Description
 }
 
-func (p *Product) SetCategorys(categorys []string) []string {
-	p.Categories = categorys
+func (p *Product) SetCategories(categories []Categories) []Categories {
+	p.Categories = categories
 	return p.Categories
 }
 
@@ -118,7 +118,7 @@ func (p *Product) ToString() (string, error) {
 
 	productJson, err := json.Marshal(p)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear p struc para JSON. (%v)", p.Name)
+		log.Error().Err(err).Msgf("Não foi possível mapear o struc para JSON. (%v)", p.Name)
 		return "", err
 	}
 	return string(productJson), nil
@@ -134,11 +134,11 @@ func (p *Product) Inject(product *Product) *Product {
 		p.Description = product.Description
 	}
 
-	if fmt.Sprintf(" %T", product.Categories) != "[]string" {
+	if fmt.Sprintf("%T", product.Categories) == "[]product.Categories" {
 		p.Categories = product.Categories
 	}
 
-	if fmt.Sprintf(" %T", product.Pictures) != "[]string" {
+	if fmt.Sprintf("%T", product.Pictures) == "[]string" {
 		p.Pictures = product.Pictures
 	}
 
@@ -160,6 +160,10 @@ func (p *Product) Inject(product *Product) *Product {
 
 	if product.Weight != "" {
 		p.Weight = product.Weight
+	}
+
+	if product.Status != Undefined {
+		p.Status = product.Status
 	}
 
 	if product.CreatedAt != "" {

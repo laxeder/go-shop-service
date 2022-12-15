@@ -3,14 +3,13 @@ package address
 import (
 	"encoding/json"
 
-	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 type Address struct {
+	Uid          string `json:"uid,omitempty" redis:"uid,omitempty"`
 	Uuid         string `json:"uuid,omitempty" redis:"uuid,omitempty"`
-	Document     string `json:"document,omitempty" redis:"document,omitempty"`
 	Number       string `json:"number,omitempty" redis:"number,omitempty"`
 	Zip          string `json:"zip,omitempty" redis:"zip,omitempty"`
 	Street       string `json:"street,omitempty" redis:"street,omitempty"`
@@ -39,6 +38,21 @@ func New(addressByte ...[]byte) (address *Address, err error) {
 	}
 
 	return address, err
+}
+
+func (a *Address) NewUid() string {
+	a.Uid = utils.Nonce()
+	return a.Uid
+}
+
+func (a *Address) SetUid(uid string) string {
+	a.Uid = uid
+	return a.Uid
+}
+
+func (a *Address) SetUuid(uuid string) string {
+	a.Uuid = uuid
+	return a.Uuid
 }
 
 func (a *Address) SetNumber(number string) string {
@@ -77,20 +91,6 @@ func (a *Address) SetStatus(status Status) Status {
 	return status
 }
 
-func (a *Address) SetDocument(document string) string {
-	a.Document = str.DocumentPad(document)
-	return a.Document
-}
-
-func (a *Address) NewUuid() string {
-	return uuid.New().String()
-}
-
-func (a *Address) SetUuid(uuid string) string {
-	a.Uuid = uuid
-	return a.Uuid
-}
-
 func (a *Address) SetCreatedAt(createdAt string) string {
 	a.CreatedAt = createdAt
 	return a.CreatedAt
@@ -106,7 +106,7 @@ func (a *Address) ToString() (string, error) {
 
 	addressJson, err := json.Marshal(a)
 	if err != nil {
-		log.Error().Err(err).Msgf("A struct do address está incorreta. (%v)", a.Document)
+		log.Error().Err(err).Msgf("A struct do address está incorreta. (%v)", a.Uid)
 		return "", err
 	}
 	return string(addressJson), nil
@@ -114,12 +114,12 @@ func (a *Address) ToString() (string, error) {
 
 func (a *Address) Inject(address *Address) *Address {
 
-	if address.Uuid != "" {
-		a.Uuid = address.Uuid
+	if address.Uid != "" {
+		a.Uid = address.Uid
 	}
 
-	if address.Document != "" {
-		a.Document = address.Document
+	if address.Uuid != "" {
+		a.Uuid = address.Uuid
 	}
 
 	if address.Number != "" {

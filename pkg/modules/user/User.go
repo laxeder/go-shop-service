@@ -14,19 +14,21 @@ import (
 var log = logger.New()
 
 type User struct {
-	Uuid            string `json:"uuid,omitempty" redis:"uuid,omitempty"`
-	Fullname        string `json:"full_name,omitempty" redis:"full_name,omitempty"`
-	FirstName       string `json:"first_name,omitempty" redis:"first_name,omitempty"`
-	LastName        string `json:"last_name,omitempty" redis:"last_name,omitempty"`
-	Document        string `json:"document,omitempty" redis:"document,omitempty"`
-	Email           string `json:"email,omitempty" redis:"email,omitempty"`
-	Telephone       string `json:"telephone,omitempty" redis:"telephone,omitempty"`
-	Password        string `json:"password,omitempty" redis:"password,omitempty"`
-	ConfirmPassword string `json:"confirm_password,omitempty" redis:"-,omitempty"`
-	Salt            string `json:"salt,omitempty" redis:"salt,omitempty"`
-	Status          Status `json:"status,omitempty" redis:"status,omitempty"`
-	CreatedAt       string `json:"created_at,omitempty" redis:"created_at,omitempty"`
-	UpdatedAt       string `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
+	Uuid            string   `json:"uuid,omitempty" redis:"uuid,omitempty"`
+	Fullname        string   `json:"full_name,omitempty" redis:"full_name,omitempty"`
+	FirstName       string   `json:"first_name,omitempty" redis:"first_name,omitempty"`
+	LastName        string   `json:"last_name,omitempty" redis:"last_name,omitempty"`
+	Document        string   `json:"document,omitempty" redis:"document,omitempty"`
+	Email           string   `json:"email,omitempty" redis:"email,omitempty"`
+	Telephone       string   `json:"telephone,omitempty" redis:"telephone,omitempty"`
+	Password        string   `json:"password,omitempty" redis:"password,omitempty"`
+	ConfirmPassword string   `json:"confirm_password,omitempty" redis:"-,omitempty"`
+	Salt            string   `json:"salt,omitempty" redis:"salt,omitempty"`
+	Status          Status   `json:"status,omitempty" redis:"status,omitempty"`
+	Adresses        []string `json:"adresses,omitempty" redis:"adresses,omitempty"`
+	Accounts        []string `json:"account,omitempty" redis:"account,omitempty"`
+	CreatedAt       string   `json:"created_at,omitempty" redis:"created_at,omitempty"`
+	UpdatedAt       string   `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
 func New(userByte ...[]byte) (user *User, err error) {
@@ -89,6 +91,16 @@ func (u *User) SetConfirmPassword(confirmPassword string) string {
 func (u *User) SetSalt(salt string) string {
 	u.Salt = salt
 	return u.Salt
+}
+
+func (u *User) SetAdresses(adresses []string) []string {
+	u.Adresses = adresses
+	return u.Adresses
+}
+
+func (u *User) SetAccounts(accounts []string) []string {
+	u.Accounts = accounts
+	return u.Accounts
 }
 
 func (u *User) SetStatus(status Status) Status {
@@ -190,6 +202,14 @@ func (u *User) Inject(user *User) *User {
 
 	if user.Salt != "" {
 		u.Salt = user.Salt
+	}
+
+	if fmt.Sprintf("%T", user.Accounts) == "[]string" {
+		u.Adresses = user.Accounts
+	}
+
+	if fmt.Sprintf("%T", user.Adresses) == "[]string" {
+		u.Adresses = user.Adresses
 	}
 
 	if user.Status != Undefined {

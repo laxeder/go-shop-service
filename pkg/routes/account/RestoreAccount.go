@@ -13,30 +13,29 @@ func RestoreAccount(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uid := ctx.Params("uid")
 
-	// carrega a conta do usuário com base no documento
-	accountDatabase, err := account.Repository().GetDocument(document)
+	accountDatabase, err := account.Repository().GetUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar conta. (%v)", document)
+		log.Error().Err(err).Msgf("Erro ao tentar validar conta. (%v)", uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC097"))
 	}
 
 	// verifica o status do conta
 	if accountDatabase.Status == account.Enabled {
-		log.Error().Msgf("Este conta já está ativada no sistema. (%v)", document)
+		log.Error().Msgf("Este conta já está ativada no sistema. (%v)", uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Este conta já está ativo no sistema."))
 	}
 
 	// muda o status do conta para ativo
+	accountDatabase.Uid = uid
 	accountDatabase.Status = account.Enabled
-	accountDatabase.Document = document
 	accountDatabase.UpdatedAt = date.NowUTC()
 
 	// salva as alterações na base de dados
 	err = account.Repository().Restore(accountDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", document)
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC100", "O formado dos dados envidados está incorreto."))
 	}
 

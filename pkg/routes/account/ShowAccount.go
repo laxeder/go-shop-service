@@ -12,12 +12,11 @@ func ShowAccount(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uid := ctx.Params("uid")
 
-	// carrega a conta do usuário com vase no documento passdo
-	accountData, err := account.Repository().GetByDocument(document)
+	accountData, err := account.Repository().GetByUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", document)
+		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC130"))
 	}
 

@@ -14,12 +14,12 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
 	body := ctx.Body()
-	document := ctx.Params("document")
+	uid := ctx.Params("uid")
 
 	// converte json para struct
 	accountBody, err := account.New(body)
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", document)
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC164", "O formado dos dados envidados está incorreto."))
 	}
 
@@ -30,21 +30,22 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 	// }
 
 	// carrega o usuário da base de dados
-	accountData, err := account.Repository().GetByDocument(document)
+
+	accountDatabase, err := account.Repository().GetByUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Document)
+		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Uid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC081", "Erro ao tentar validar usuário."))
 	}
 
 	// formata a atualização
-	accountData.Inject(accountBody)
-	accountData.Birthday = date.BRToUTC(accountBody.Birthday)
-	accountData.UpdatedAt = date.NowUTC()
+	accountDatabase.Inject(accountBody)
+	accountDatabase.Birthday = date.BRToUTC(accountBody.Birthday)
+	accountDatabase.UpdatedAt = date.NowUTC()
 
 	// guarda as alterações na base de dados
-	err = account.Repository().Update(accountData)
+	err = account.Repository().Update(accountDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", document)
+		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC167"))
 	}
 

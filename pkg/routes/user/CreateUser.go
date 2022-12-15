@@ -32,9 +32,9 @@ func CreateUser(ctx *fiber.Ctx) error {
 	//!##################################################################################################################//
 	//! VERIFICA SE O DOCUMENTO DO USUÁRIO EXISTE NA BASE DE DADOS
 	//!##################################################################################################################//
-	userDatabase, err := user.Repository().GetDocument(userBody.Document)
+	userDatabase, err := user.Repository().GetUuid(userBody.Uuid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err) // passar o documento
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos (%v). %v", userBody.Document, err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC031"))
 	}
 

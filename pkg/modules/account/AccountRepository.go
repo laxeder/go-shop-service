@@ -6,9 +6,10 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/modules/user"
 )
 
 var redisClient *redis.Client
@@ -23,7 +24,6 @@ func (a *Account) Save(account *Account) (err error) {
 	err = nil
 
 	ctx := context.Background()
-	document := str.DocumentPad(account.Document)
 
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
@@ -31,23 +31,40 @@ func (a *Account) Save(account *Account) (err error) {
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", account.Uid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uuid", account.Uuid)
-		rdb.HSet(ctx, key, "document", account.Document)
+		rdb.HSet(ctx, key, "uid", account.Uid)
 		rdb.HSet(ctx, key, "nickname", account.Nickname)
 		rdb.HSet(ctx, key, "profession", account.Profession)
 		rdb.HSet(ctx, key, "rg", account.RG)
 		rdb.HSet(ctx, key, "birthday", account.Birthday)
 		rdb.HSet(ctx, key, "gender", string(account.Gender))
+		rdb.HSet(ctx, key, "status", string(account.Status))
 		rdb.HSet(ctx, key, "created_at", account.CreatedAt)
 		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
 		return nil
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível inserir um aconta no redis. (%v)", document)
+		log.Error().Err(err).Msgf("Não foi possível inserir uma conta com o uid no redis. (%v)", account.Uid)
+		return
+	}
+
+	// carrega o usuário da base de dados para atualizar as contas
+	userDatabase, err := user.Repository().GetByUuid(account.Uuid)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tentar validar usuário (%v), (%v).", account.Uid, err)
+		return
+	}
+
+	userDatabase.Accounts = append(userDatabase.Accounts, account.Uid)
+	userDatabase.UpdatedAt = date.NowUTC()
+
+	err = user.Repository().Update(userDatabase)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tentar atualizar contas do usuário (%v), (%v).", account.Uid, err)
 		return
 	}
 
@@ -60,15 +77,13 @@ func (a *Account) Update(account *Account) (err error) {
 	ctx := context.Background()
 	err = nil
 
-	document := str.DocumentPad(account.Document)
-
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.AccountDatabase)
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", account.Uid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "nickname", account.Nickname)
@@ -81,14 +96,14 @@ func (a *Account) Update(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar a conta no redis. (%v)", document)
+		log.Error().Err(err).Msgf("Não foi possível atualizar a conta no redis. (%v)", account.Uid)
 		return
 	}
 
 	return
 }
 
-func (u *Account) GetDocument(document string) (account *Account, err error) {
+func (u *Account) GetUid(uid string) (account *Account, err error) {
 
 	var log = logger.New()
 
@@ -96,7 +111,6 @@ func (u *Account) GetDocument(document string) (account *Account, err error) {
 	err = nil
 
 	ctx := context.Background()
-	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
@@ -104,17 +118,17 @@ func (u *Account) GetDocument(document string) (account *Account, err error) {
 		return nil, err
 	}
 
-	key := fmt.Sprintf("accounts:%v", document)
-	res := redisClient.HMGet(ctx, key, "uuid", "document", "status")
+	key := fmt.Sprintf("accounts:%v", uid)
+	res := redisClient.HMGet(ctx, key, "uuid", "uid", "status")
 	err = res.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível encontrar a conta com uid: %v.", uid)
 		return u, err
 	}
 
 	err = res.Scan(account)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível mapear uma conta válida para o uid %v.", uid)
 		return nil, err
 	}
 
@@ -126,7 +140,7 @@ func (u *Account) GetDocument(document string) (account *Account, err error) {
 	return account, nil
 }
 
-func (a *Account) GetByDocument(document string) (account *Account, err error) {
+func (a *Account) GetByUid(uid string) (account *Account, err error) {
 
 	var log = logger.New()
 
@@ -134,7 +148,6 @@ func (a *Account) GetByDocument(document string) (account *Account, err error) {
 	err = nil
 
 	ctx := context.Background()
-	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
@@ -142,17 +155,19 @@ func (a *Account) GetByDocument(document string) (account *Account, err error) {
 		return nil, err
 	}
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", uid)
 	res := redisClient.HGetAll(ctx, key)
+
 	err = res.Err()
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível encontrar a conta com uid: %v.", uid)
 		return nil, err
 	}
 
 	err = res.Scan(account)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível mapear uma conta válida para o uid %v.", uid)
 		return nil, err
 	}
 
@@ -170,15 +185,13 @@ func (a *Account) SaveOptins(account *Account) (err error) {
 	ctx := context.Background()
 	err = nil
 
-	document := str.DocumentPad(account.Document)
-
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.AccountDatabase)
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", account.Uid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "optins_cdu", account.Options)
@@ -187,46 +200,11 @@ func (a *Account) SaveOptins(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o optins no redis. (%v)", document)
+		log.Error().Err(err).Msgf("Não foi possível atualizar o optins no redis. (%v)", account.Uid)
 		return
 	}
 
 	return
-}
-
-func (u *Account) SaveDocument(dcm string, account *Account) (err error) {
-
-	var log = logger.New()
-
-	err = nil
-
-	ctx := context.Background()
-	document := str.DocumentPad(account.Document)
-
-	redisClient, err = redisdb.New(redisdb.AccountDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.AccountDatabase)
-		return err
-	}
-
-	key := fmt.Sprintf("accounts:%v", dcm)
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "document", account.Document)
-		rdb.HSet(ctx, key, "nickname", account.Nickname)
-		rdb.HSet(ctx, key, "profession", account.Profession)
-		rdb.HSet(ctx, key, "rg", account.RG)
-		rdb.HSet(ctx, key, "birthday", account.Birthday)
-		rdb.HSet(ctx, key, "gender", string(account.Gender))
-		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
-		return err
-	})
-
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com documento %v no redis.", document)
-		return err
-	}
-
-	return nil
 }
 
 func (u *Account) Delete(account *Account) (err error) {
@@ -236,7 +214,6 @@ func (u *Account) Delete(account *Account) (err error) {
 	err = nil
 
 	ctx := context.Background()
-	document := str.DocumentPad(account.Document)
 
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
@@ -246,7 +223,7 @@ func (u *Account) Delete(account *Account) (err error) {
 
 	account.Status = Disabled
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", account.Uid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(account.Status))
 		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
@@ -254,7 +231,7 @@ func (u *Account) Delete(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível deletar o conta com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível deletar o conta com uid %v no redis.", account.Uid)
 		return err
 	}
 
@@ -268,7 +245,6 @@ func (u *Account) Restore(account *Account) (err error) {
 	err = nil
 
 	ctx := context.Background()
-	document := str.DocumentPad(account.Document)
 
 	redisClient, err = redisdb.New(redisdb.AccountDatabase)
 	if err != nil {
@@ -278,7 +254,7 @@ func (u *Account) Restore(account *Account) (err error) {
 
 	account.Status = Enabled
 
-	key := fmt.Sprintf("accounts:%v", document)
+	key := fmt.Sprintf("accounts:%v", account.Uid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(account.Status))
 		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
@@ -286,7 +262,7 @@ func (u *Account) Restore(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível restaurar a conta com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível restaurar a conta com uid %v no redis.", account.Uid)
 		return err
 	}
 
@@ -309,10 +285,10 @@ func (u *Account) GetList() (accounts []Account, err error) {
 
 	iter := redisClient.Scan(ctx, 0, "accounts:*", 0).Iterator()
 	for iter.Next(ctx) {
-		document := strings.Replace(iter.Val(), "accounts:", "", 2)
-		account, uErr := u.GetByDocument(document)
+		uid := strings.Replace(iter.Val(), "accounts:", "", 2)
+		account, aErr := u.GetByUid(uid)
 
-		if uErr != nil {
+		if aErr != nil {
 			continue
 		}
 

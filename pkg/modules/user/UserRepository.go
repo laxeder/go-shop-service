@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -15,6 +16,17 @@ var redisClient *redis.Client
 
 func Repository() *User {
 	return &User{}
+}
+
+func MarshalBinary(str []string) (data []byte) {
+	var log = logger.New()
+
+	data, err := json.Marshal(str)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tranformar array em bytes %s", str)
+	}
+
+	return
 }
 
 func (u *User) Save(user *User) (err error) {
@@ -32,7 +44,10 @@ func (u *User) Save(user *User) (err error) {
 		return err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
+	accounts := MarshalBinary(user.Accounts)
+	adresses := MarshalBinary(user.Adresses)
+
+	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uuid", user.Uuid)
@@ -45,13 +60,15 @@ func (u *User) Save(user *User) (err error) {
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
 		rdb.HSet(ctx, key, "status", string(user.Status))
+		rdb.HSet(ctx, key, "adresses", adresses)
+		rdb.HSet(ctx, key, "accounts", accounts)
 		rdb.HSet(ctx, key, "created_at", user.CreatedAt)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível inserir o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível inserir o usuário com uuid %v no redis.", document)
 		return err
 	}
 
@@ -73,19 +90,25 @@ func (u *User) Update(user *User) (err error) {
 		return err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
+	accounts := MarshalBinary(user.Accounts)
+	adresses := MarshalBinary(user.Adresses)
+
+	key := fmt.Sprintf("users:%v", user.Uuid)
+
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "full_name", user.Fullname)
 		rdb.HSet(ctx, key, "first_name", user.FirstName)
 		rdb.HSet(ctx, key, "last_name", user.LastName)
 		rdb.HSet(ctx, key, "email", user.Email)
 		rdb.HSet(ctx, key, "telephone", user.Telephone)
+		rdb.HSet(ctx, key, "adresses", adresses)
+		rdb.HSet(ctx, key, "accounts", accounts)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com uuid %v no redis.", document)
 		return err
 	}
 
@@ -109,7 +132,7 @@ func (u *User) Delete(user *User) (err error) {
 
 	user.Status = Disabled
 
-	key := fmt.Sprintf("users:%v", document)
+	key := fmt.Sprintf("users:%v", user.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(user.Status))
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
@@ -117,7 +140,7 @@ func (u *User) Delete(user *User) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível deletar o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível deletar o usuário com uuid %v no redis.", document)
 		return err
 	}
 
@@ -141,7 +164,7 @@ func (u *User) Restore(user *User) (err error) {
 
 	user.Status = Enabled
 
-	key := fmt.Sprintf("users:%v", document)
+	key := fmt.Sprintf("users:%v", user.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(user.Status))
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
@@ -149,7 +172,7 @@ func (u *User) Restore(user *User) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível retaurar o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível retaurar o usuário com uuid %v no redis.", document)
 		return err
 	}
 
@@ -171,7 +194,7 @@ func (u *User) SavePassowrd(user *User) (err error) {
 		return err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
+	key := fmt.Sprintf("users:%v", user.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
@@ -180,14 +203,14 @@ func (u *User) SavePassowrd(user *User) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com uuid %v no redis.", document)
 		return err
 	}
 
 	return nil
 }
 
-func (u *User) SaveDocument(dcm string, user *User) (err error) {
+func (u *User) SaveDocument(user *User) (err error) {
 
 	var log = logger.New()
 
@@ -202,27 +225,22 @@ func (u *User) SaveDocument(dcm string, user *User) (err error) {
 		return err
 	}
 
-	key := fmt.Sprintf("users:%v", dcm)
+	key := fmt.Sprintf("users:%v", user.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "document", user.Document)
-		rdb.HSet(ctx, key, "full_name", user.Fullname)
-		rdb.HSet(ctx, key, "first_name", user.FirstName)
-		rdb.HSet(ctx, key, "last_name", user.LastName)
-		rdb.HSet(ctx, key, "email", user.Email)
-		rdb.HSet(ctx, key, "telephone", user.Telephone)
+		rdb.HSet(ctx, key, "document", document)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return err
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com documento %v no redis.", document)
+		log.Error().Err(err).Msgf("Não foi possível atualizar o usuário com uuid %v no redis.", document)
 		return err
 	}
 
 	return nil
 }
 
-func (u *User) GetPasswordByDocument(document string) (user *User, err error) {
+func (u *User) GetPasswordByUuid(uuid string) (user *User, err error) {
 
 	var log = logger.New()
 
@@ -230,7 +248,6 @@ func (u *User) GetPasswordByDocument(document string) (user *User, err error) {
 	err = nil
 
 	ctx := context.Background()
-	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.UserDatabase)
 	if err != nil {
@@ -238,17 +255,17 @@ func (u *User) GetPasswordByDocument(document string) (user *User, err error) {
 		return nil, err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
-	res := redisClient.HMGet(ctx, key, "document", "password", "salt")
+	key := fmt.Sprintf("users:%v", uuid)
+	res := redisClient.HMGet(ctx, key, "uid", "uuid", "password", "salt")
 	err = res.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com uuid: %v.", uuid)
 		return nil, err
 	}
 
 	err = res.Scan(user)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido com o documento %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido com o uuid %v.", uuid)
 		return nil, err
 	}
 
@@ -260,7 +277,7 @@ func (u *User) GetPasswordByDocument(document string) (user *User, err error) {
 	return user, nil
 }
 
-func (u *User) GetDocument(document string) (user *User, err error) {
+func (u *User) GetUuid(uuid string) (user *User, err error) {
 
 	var log = logger.New()
 
@@ -268,7 +285,6 @@ func (u *User) GetDocument(document string) (user *User, err error) {
 	err = nil
 
 	ctx := context.Background()
-	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.UserDatabase)
 	if err != nil {
@@ -276,17 +292,19 @@ func (u *User) GetDocument(document string) (user *User, err error) {
 		return nil, err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
-	res := redisClient.HMGet(ctx, key, "uuid", "document", "status")
+	key := fmt.Sprintf("users:%v", uuid)
+	res := redisClient.HMGet(ctx, key, "uid", "uuid", "status")
+
 	err = res.Err()
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com uuid: %v.", uuid)
 		return u, err
 	}
 
 	err = res.Scan(user)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o uuid %v.", uuid)
 		return nil, err
 	}
 
@@ -298,7 +316,7 @@ func (u *User) GetDocument(document string) (user *User, err error) {
 	return user, nil
 }
 
-func (u *User) GetByDocument(document string) (user *User, err error) {
+func (u *User) GetByUuid(uuid string) (user *User, err error) {
 
 	var log = logger.New()
 
@@ -306,7 +324,6 @@ func (u *User) GetByDocument(document string) (user *User, err error) {
 	err = nil
 
 	ctx := context.Background()
-	document = str.DocumentPad(document)
 
 	redisClient, err := redisdb.New(redisdb.UserDatabase)
 	if err != nil {
@@ -314,17 +331,17 @@ func (u *User) GetByDocument(document string) (user *User, err error) {
 		return nil, err
 	}
 
-	key := fmt.Sprintf("users:%v", document)
+	key := fmt.Sprintf("users:%v", uuid)
 	res := redisClient.HGetAll(ctx, key)
 	err = res.Err()
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com documento: %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível encontrar o usuário com uuid: %v.", uuid)
 		return nil, err
 	}
 
 	err = res.Scan(user)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o documento %v.", document)
+		log.Error().Err(err).Msgf("Não foi possível mapear um usuário válido para o uuid %v.", uuid)
 		return nil, err
 	}
 
@@ -357,8 +374,9 @@ func (u *User) GetList() (users []User, err error) {
 
 	iter := redisClient.Scan(ctx, 0, "users:*", 0).Iterator()
 	for iter.Next(ctx) {
-		document := strings.Replace(iter.Val(), "users:", "", 2)
-		user, uErr := u.GetByDocument(document)
+		uuid := strings.Replace(iter.Val(), "users:", "", 2)
+		user, uErr := u.GetByUuid(uuid)
+
 		if uErr != nil {
 			continue
 		}
@@ -368,7 +386,9 @@ func (u *User) GetList() (users []User, err error) {
 		}
 
 		user.Password = ""
+		user.ConfirmPassword = ""
 		user.Salt = ""
+
 		users = append(users, *user)
 	}
 

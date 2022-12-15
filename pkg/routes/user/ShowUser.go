@@ -11,15 +11,14 @@ import (
 func ShowUser(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uuid := ctx.Params("uuid")
 
-	// carega um usuário da base de dados
-	userData, err := user.Repository().GetByDocument(document)
+	userDatabase, err := user.Repository().GetByUuid(uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC035"))
 	}
 
-	return response.Ctx(ctx).Result(response.Success(200, userData))
+	return response.Ctx(ctx).Result(response.Success(200, userDatabase))
 
 }

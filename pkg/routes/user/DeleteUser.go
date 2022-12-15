@@ -12,9 +12,10 @@ import (
 func DeleteUser(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
-	document := ctx.Params("document")
+	uuid := ctx.Params("uuid")
 
-	userDatabase, err := user.Repository().GetDocument(document)
+	userDatabase, err := user.Repository().GetUuid(uuid)
+
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC087"))
@@ -22,13 +23,13 @@ func DeleteUser(ctx *fiber.Ctx) error {
 
 	// verifica o status do usuário
 	if userDatabase.Status != user.Enabled {
-		log.Error().Msgf("Este usuário já está desativado no sistema. (%v)", document)
+		log.Error().Msgf("Este usuário já está desativado no sistema. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC060", "Esta usuário já está desativado no sistema."))
 	}
 
+	userDatabase.Uuid = uuid
 	userDatabase.Status = user.Disabled
 	userDatabase.UpdatedAt = date.NowUTC()
-	userDatabase.Document = document
 
 	err = user.Repository().Delete(userDatabase)
 	if err != nil {

@@ -41,7 +41,7 @@ func (a *Product) Save(product *Product) (err error) {
 	}
 
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categories := MarshalBinary(product.Categories)
+	categories := MarshalBinary(ConvertCategories(product.Categories))
 	pictures := MarshalBinary(product.Pictures)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -55,6 +55,7 @@ func (a *Product) Save(product *Product) (err error) {
 		rdb.HSet(ctx, key, "code", product.Code)
 		rdb.HSet(ctx, key, "weight", product.Weight)
 		rdb.HSet(ctx, key, "color", product.Color)
+		rdb.HSet(ctx, key, "status", string(product.Status))
 		rdb.HSet(ctx, key, "updated_at", product.UpdatedAt)
 		rdb.HSet(ctx, key, "created_at", product.CreatedAt)
 		return err
@@ -81,7 +82,7 @@ func (a *Product) Update(product *Product) (err error) {
 	}
 
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categories := MarshalBinary(product.Categories)
+	categories := MarshalBinary(ConvertCategories(product.Categories))
 	pictures := MarshalBinary(product.Pictures)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -95,6 +96,7 @@ func (a *Product) Update(product *Product) (err error) {
 		rdb.HSet(ctx, key, "code", product.Code)
 		rdb.HSet(ctx, key, "weight", product.Weight)
 		rdb.HSet(ctx, key, "color", product.Color)
+		rdb.HSet(ctx, key, "status", string(product.Status))
 		rdb.HSet(ctx, key, "updated_at", product.UpdatedAt)
 		rdb.HSet(ctx, key, "created_at", product.CreatedAt)
 		return nil
@@ -162,6 +164,7 @@ func (a *Product) GetByUid(uid string) (product *Product, err error) {
 
 	key := fmt.Sprintf("products:%v", uid)
 	res := redisClient.HGetAll(ctx, key)
+
 	err = res.Err()
 	if err != nil {
 		log.Error().Err(err).Msgf("Não foi possível encontrar o produto com o uid: %v.", uid)
@@ -173,6 +176,8 @@ func (a *Product) GetByUid(uid string) (product *Product, err error) {
 		log.Error().Err(err).Msgf("Não foi possível mapear o produto válido para o uid %v.", uid)
 		return nil, err
 	}
+
+	fmt.Println(product)
 
 	if product.Status == Disabled {
 		product = &Product{Status: Disabled}

@@ -4,22 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 type Account struct {
+	Uid        string `json:"uid,omitempty" redis:"uid,omitempty"`
 	Uuid       string `json:"uuid,omitempty" redis:"uuid,omitempty"`
-	Document   string `json:"document,omitempty" redis:"document,omitempty"`
 	Nickname   string `json:"nickname,omitempty" redis:"nickname,omitempty"`
 	Profession string `json:"profession,omitempty" redis:"profession,omitempty"`
 	RG         string `json:"rg,omitempty" redis:"rg,omitempty"`
 	Gender     Gender `json:"gender,omitempty" redis:"gender,omitempty"`
 	Birthday   string `json:"birthday,omitempty" redis:"birthday,omitempty"`
-	CreatedAt  string `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	Options    bool   `json:"options,omitempty" redis:"options"`
 	Status     Status `json:"status,omitempty" redis:"status,omitempty"`
+	CreatedAt  string `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt  string `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
@@ -42,15 +41,15 @@ func New(accountByte ...[]byte) (account *Account, err error) {
 	return
 }
 
-func (a *Account) SetDocument(document string) string {
-	a.Document = str.DocumentPad(document)
-	return a.Document
+func (a *Account) NewUid() string {
+	a.Uid = utils.Nonce()
+	return a.Uid
 }
 
-func (a *Account) NewUuid() string {
-	return uuid.New().String()
+func (a *Account) SetUid(uid string) string {
+	a.Uid = uid
+	return a.Uid
 }
-
 func (a *Account) SetUuid(uuid string) string {
 	a.Uuid = uuid
 	return a.Uuid
@@ -106,7 +105,7 @@ func (a *Account) ToString() (string, error) {
 
 	accountJson, err := json.Marshal(a)
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear a struc para JSON. (%v)", a.Document)
+		log.Error().Err(err).Msgf("Não foi possível mapear a struc para JSON. (%v)", a.Uid)
 		return "", err
 	}
 	return string(accountJson), nil
@@ -114,12 +113,12 @@ func (a *Account) ToString() (string, error) {
 
 func (a *Account) Inject(account *Account) *Account {
 
-	if account.Uuid != "" {
-		a.Uuid = account.Uuid
+	if account.Uid != "" {
+		a.Uid = account.Uid
 	}
 
-	if account.Document != "" {
-		a.Document = account.Document
+	if account.Uuid != "" {
+		a.Uuid = account.Uuid
 	}
 
 	if account.Nickname != "" {
@@ -144,6 +143,10 @@ func (a *Account) Inject(account *Account) *Account {
 
 	if account.Gender != "" {
 		a.Gender = account.Gender
+	}
+
+	if account.Status != Undefined {
+		a.Status = account.Status
 	}
 
 	if account.CreatedAt != "" {

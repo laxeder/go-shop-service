@@ -14,7 +14,7 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
 	body := ctx.Body()
-	document := ctx.Params("document")
+	uuid := ctx.Params("uuid")
 
 	// iniicia a struct do usuário com password
 	userPassowrd := &user.UserPassword{}
@@ -22,7 +22,7 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 	// converte o json para struct
 	err := json.Unmarshal(body, userPassowrd)
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", document)
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC091", "O formado dos dados envidados está incorreto."))
 	}
 
@@ -31,7 +31,7 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 
 	// compara o password
 	if userPassowrd.Password == userPassowrd.NewPassword {
-		log.Error().Msgf("A nova senha não pode ser idêntica a senha atual.(%v)", document)
+		log.Error().Msgf("A nova senha não pode ser idêntica a senha atual.(%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "BLC077", "A nova senha não pode ser idêntica a senha atual."))
 	}
 
@@ -47,11 +47,10 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(checkConfirmPassword)
 	}
 
-	// carrega os dados do usuário da base de dados
-	userDatabase, err := user.Repository().GetPasswordByDocument(document)
+	userDatabase, err := user.Repository().GetByUuid(uuid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar carregar usuário %v.", document)
-		return response.Ctx(ctx).Result(response.ErrorDefault("BLC093"))
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		return response.Ctx(ctx).Result(response.ErrorDefault("BLC035"))
 	}
 
 	// injeta os novos valores no lugar dos dados recuperados da base de dados
@@ -63,7 +62,7 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 	// guarda a alterações na base de dados do usuário
 	err = user.Repository().SavePassowrd(userDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar atualizar o repositório do usuário %v", document)
+		log.Error().Err(err).Msgf("Erro ao tentar atualizar o repositório do usuário %v", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("BLC096"))
 	}
 
