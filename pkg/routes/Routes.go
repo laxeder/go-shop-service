@@ -2,49 +2,68 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	c "github.com/laxeder/go-shop-service/pkg/routes/account"
-	a "github.com/laxeder/go-shop-service/pkg/routes/address"
-	p "github.com/laxeder/go-shop-service/pkg/routes/product"
-	u "github.com/laxeder/go-shop-service/pkg/routes/user"
+	acc "github.com/laxeder/go-shop-service/pkg/routes/account"
+	addr "github.com/laxeder/go-shop-service/pkg/routes/address"
+	ctg "github.com/laxeder/go-shop-service/pkg/routes/category"
+	prod "github.com/laxeder/go-shop-service/pkg/routes/product"
+	usr "github.com/laxeder/go-shop-service/pkg/routes/user"
 )
 
 func ApiV1(app *fiber.App) {
 
 	route := app.Group("/api/v1")
 
+	//? ********** Rotas do servidor **********
+
 	route.Get("/health", Health)
 	route.Get("/redis/health", RedisHealth)
 
-	route.Put("/user/password/:uuid", u.UpdateUserPassword)
-	route.Put("/user/document/:uuid", u.UpdateUserDocument)
-	route.Patch("/user/:uuid", u.RestoreUser)
-	route.Delete("/user/:uuid", u.DeleteUser)
-	route.Put("/user/:uuid", u.UpdateUser)
-	route.Get("/user/:uuid", u.ShowUser)
-	route.Post("/user", u.CreateUser)
-	route.Get("/users", u.ListUsers)
+	//? *************** Rotas do usuário ***************
 
-	route.Patch("/address/:uid", a.RestoreAddress)
-	route.Delete("/address/:uid", a.DeleteAddress)
-	route.Put("/address/:uid", a.UpdateAddress)
-	route.Get("/address/:uid", a.ShowAddress)
-	route.Post("/address", a.CreateAddress)
-	route.Get("/adresses", a.ListAddress)
+	route.Put("/user/password/:uuid", usr.UpdateUserPassword)
+	route.Put("/user/document/:uuid", usr.UpdateUserDocument)
+	route.Patch("/user/:uuid", usr.RestoreUser)
+	route.Delete("/user/:uuid", usr.DeleteUser)
+	route.Put("/user/:uuid", usr.UpdateUser)
+	route.Get("/user/:uuid", usr.ShowUser)
+	route.Post("/user", usr.CreateUser)
+	route.Get("/users", usr.ListUsers)
 
-	route.Patch("/account/:uid", c.RestoreAccount)
-	route.Delete("/account/:uid", c.DeleteAccount)
-	route.Put("/account/:uid", c.UpdateAccount)
-	route.Get("/account/:uid", c.ShowAccount)
-	route.Post("/account", c.CreateAccount)
-	route.Get("/accounts", c.ListAccounts)
+	//? *************** Rotas do endereço ***************
 
-	route.Patch("/product/:uid", p.RestoreProduct)
-	route.Put("/product/uid/:uid", p.UpdateProductUid)
-	route.Delete("/product/:uid", p.DeleteProduct)
-	route.Put("/product/:uid", p.UpdateProduct)
-	route.Get("/product/:uid", p.ShowProduct)
-	route.Post("/product", p.CreateProduct)
-	route.Get("/products", p.ListProducts)
+	route.Patch("/address/:uid", addr.RestoreAddress)
+	route.Delete("/address/:uid", addr.DeleteAddress)
+	route.Put("/address/:uid", addr.UpdateAddress)
+	route.Get("/address/:uid", addr.ShowAddress)
+	route.Post("/address", addr.CreateAddress)
+	route.Get("/adresses", addr.ListAddress)
+
+	//? *************** Rotas da conta ***************
+
+	route.Patch("/account/:uid", acc.RestoreAccount)
+	route.Delete("/account/:uid", acc.DeleteAccount)
+	route.Put("/account/:uid", acc.UpdateAccount)
+	route.Get("/account/:uid", acc.ShowAccount)
+	route.Post("/account", acc.CreateAccount)
+	route.Get("/accounts", acc.ListAccounts)
+
+	//? *************** Rotas do produto ***************
+
+	route.Patch("/product/:uid", prod.RestoreProduct)
+	route.Delete("/product/:uid", prod.DeleteProduct)
+	route.Put("/product/:uid", prod.UpdateProduct)
+	route.Get("/product/:uid", prod.ShowProduct)
+	route.Post("/product", prod.CreateProduct)
+	route.Get("/products", prod.ListProducts)
+
+	//? *************** Rotas da categoria ***************
+
+	route.Patch("/category/:code", ctg.RestoreCategory)
+	route.Delete("/category/:code", ctg.DeleteCategory)
+	route.Put("/category/:code", ctg.UpdateCategory)
+	route.Get("/category/:code", ctg.ShowCategory)
+	route.Post("/category", ctg.CreateCategory)
+	route.Get("/categories", ctg.ListCategories)
 
 }
 
