@@ -92,6 +92,14 @@ func (p *Product) ForEachCategory(fn func(ctg category.Category)) []category.Cat
 	return p.Categories
 }
 
+func (p *Product) ForEachCategoryCodes(fn func(code string)) []string {
+	for _, code := range p.CategoryCodes {
+		fn(code)
+	}
+
+	return p.CategoryCodes
+}
+
 func (p *Product) ApplyCategoryCodes() []string {
 	p.CategoryCodes = []string{}
 

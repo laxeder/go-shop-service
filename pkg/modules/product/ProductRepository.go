@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/laxeder/go-shop-service/pkg/modules/category"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
 )
@@ -28,6 +29,19 @@ func MarshalBinary(str []string) (data []byte) {
 	return
 }
 
+func UnmarshalBinary(bff []byte) []string {
+	var log = logger.New()
+
+	data := &[]string{}
+
+	err := json.Unmarshal(bff, data)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tranformar bytes em array %s", bff)
+	}
+
+	return *data
+}
+
 func (p *Product) Save(product *Product) (err error) {
 	var log = logger.New()
 
@@ -40,6 +54,9 @@ func (p *Product) Save(product *Product) (err error) {
 		return
 	}
 
+	//? Define as categorias pelo code delas
+	product.ApplyCategoryCodes()
+
 	key := fmt.Sprintf("products:%v", product.Uid)
 	categories := MarshalBinary(product.CategoryCodes)
 	pictures := MarshalBinary(product.Pictures)
@@ -49,7 +66,7 @@ func (p *Product) Save(product *Product) (err error) {
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "categories", categories)
+		rdb.HSet(ctx, key, "category_codes", categories)
 		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
@@ -81,6 +98,9 @@ func (p *Product) Update(product *Product) (err error) {
 		return
 	}
 
+	//? Define as categorias pelo code delas
+	product.ApplyCategoryCodes()
+
 	key := fmt.Sprintf("products:%v", product.Uid)
 	categories := MarshalBinary(product.CategoryCodes)
 	pictures := MarshalBinary(product.Pictures)
@@ -90,7 +110,7 @@ func (p *Product) Update(product *Product) (err error) {
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "categories", categories)
+		rdb.HSet(ctx, key, "category_codes", categories)
 		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
@@ -177,7 +197,26 @@ func (p *Product) GetByUid(uid string) (product *Product, err error) {
 		return nil, err
 	}
 
-	fmt.Println(product)
+	product.Pictures = UnmarshalBinary([]byte(res.Val()["pictures"]))
+	product.CategoryCodes = UnmarshalBinary([]byte(res.Val()["category_codes"]))
+
+	product.ForEachCategoryCodes(func(code string) {
+		categoryDatabase, err := category.Repository().GetByCode(code)
+
+		fmt.Printf("code %v", code)
+
+		if err != nil {
+			log.Error().Err(err).Msgf("Erro ao buscar categoria do produto. %v", err)
+			return
+		}
+
+		if categoryDatabase.Code == "" {
+			log.Error().Err(err).Msgf("Categoria (%v) não existe. %v", code, err)
+			return
+		}
+
+		product.Categories = append(product.Categories, *categoryDatabase)
+	})
 
 	if product.Status == Disabled {
 		product = &Product{Status: Disabled}
