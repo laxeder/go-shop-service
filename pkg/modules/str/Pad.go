@@ -47,3 +47,10 @@ func PadTimestamp(timestamp int64) string {
 	pad := strings.Replace(padSpaces, " ", "0", 10)
 	return pad[:10]
 }
+
+// pad start: 4 positions - 0000
+func PadCategory(ctg string) string {
+	padSpaces := fmt.Sprintf("%4v", ctg)
+	pad := strings.Replace(padSpaces, " ", "0", 4)
+	return pad[:4]
+}

@@ -4,24 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/laxeder/go-shop-service/pkg/modules/category"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
+	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 type Product struct {
-	Uid         string       `json:"uid,omitempty" redis:"uid,omitempty"`
-	Name        string       `json:"name,omitempty" redis:"name,omitempty"`
-	Description string       `json:"description,omitempty" redis:"description,omitempty"`
-	Pictures    []string     `json:"pictures,omitempty" redis:"pictures,omitempty"`
-	Categories  []Categories `json:"categories,omitempty" redis:"categories,omitempty"`
-	Price       string       `json:"price,omitempty" redis:"price,omitempty"`
-	Promotion   string       `json:"promotion,omitempty" redis:"promotion,omitempty"`
-	Code        string       `json:"code,omitempty" redis:"code,omitempty"`
-	Weight      string       `json:"weight,omitempty" redis:"weight,omitempty"`
-	Color       string       `json:"color,omitempty" redis:"color,omitempty"`
-	Status      Status       `json:"status,omitempty" redis:"status,omitempty"`
-	CreatedAt   string       `json:"created_at,omitempty" redis:"created_at,omitempty"`
-	UpdatedAt   string       `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
+	Uid           string              `json:"uid,omitempty" redis:"uid,omitempty"`
+	Name          string              `json:"name,omitempty" redis:"name,omitempty"`
+	Description   string              `json:"description,omitempty" redis:"description,omitempty"`
+	Pictures      []string            `json:"pictures,omitempty" redis:"pictures,omitempty"`
+	CategoryCodes []string            `json:"category_codes,omitempty" redis:"category_codes,omitempty"`
+	Categories    []category.Category `json:"categories,omitempty" redis:"_"`
+	Price         string              `json:"price,omitempty" redis:"price,omitempty"`
+	Promotion     string              `json:"promotion,omitempty" redis:"promotion,omitempty"`
+	Code          string              `json:"code,omitempty" redis:"code,omitempty"`
+	Weight        string              `json:"weight,omitempty" redis:"weight,omitempty"`
+	Color         string              `json:"color,omitempty" redis:"color,omitempty"`
+	Status        Status              `json:"status,omitempty" redis:"status,omitempty"`
+	CreatedAt     string              `json:"created_at,omitempty" redis:"created_at,omitempty"`
+	UpdatedAt     string              `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
 func New(productByte ...[]byte) (product *Product, err error) {
@@ -48,6 +51,59 @@ func (p *Product) NewUid() string {
 	return p.Uid
 }
 
+func (p *Product) AddCategory(ctg category.Category) []category.Category {
+	p.Categories = append(p.Categories, ctg)
+
+	return p.Categories
+}
+
+func (p *Product) RemoveCategory(ctg category.Category) []category.Category {
+	var ctgs []category.Category = []category.Category{}
+
+	for _, category := range p.Categories {
+		if category.Code == ctg.Code {
+			continue
+		}
+
+		ctgs = append(ctgs, category)
+	}
+
+	return p.Categories
+}
+
+func (p *Product) FindCategory(ctg category.Category) category.Category {
+	var result category.Category
+
+	for _, category := range p.Categories {
+		if category.Code == ctg.Code {
+			result = category
+			break
+		}
+	}
+
+	return result
+}
+
+func (p *Product) ForEachCategory(fn func(ctg category.Category)) []category.Category {
+	for _, category := range p.Categories {
+		fn(category)
+	}
+
+	return p.Categories
+}
+
+func (p *Product) ApplyCategoryCodes() []string {
+	p.CategoryCodes = []string{}
+
+	for _, category := range p.Categories {
+		p.CategoryCodes = append(p.CategoryCodes, category.Code)
+	}
+
+	p.CategoryCodes = str.UniqueInSlice(p.CategoryCodes)
+
+	return p.CategoryCodes
+}
+
 func (p *Product) SetUid(uid string) string {
 	p.Uid = uid
 	return p.Uid
@@ -68,9 +124,9 @@ func (p *Product) SetDescription(description string) string {
 	return p.Description
 }
 
-func (p *Product) SetCategories(categories []Categories) []Categories {
-	p.Categories = categories
-	return p.Categories
+func (p *Product) SetCategoryCodes(codes []string) []string {
+	p.CategoryCodes = codes
+	return p.CategoryCodes
 }
 
 func (p *Product) SetPictures(pictures []string) []string {
@@ -134,8 +190,8 @@ func (p *Product) Inject(product *Product) *Product {
 		p.Description = product.Description
 	}
 
-	if fmt.Sprintf("%T", product.Categories) == "[]product.Categories" {
-		p.Categories = product.Categories
+	if fmt.Sprintf("%T", product.CategoryCodes) == "[]string" {
+		p.CategoryCodes = product.CategoryCodes
 	}
 
 	if fmt.Sprintf("%T", product.Pictures) == "[]string" {
