@@ -29,6 +29,19 @@ func MarshalBinary(str []string) (data []byte) {
 	return
 }
 
+func UnmarshalBinary(bff []byte) []string {
+	var log = logger.New()
+
+	data := &[]string{}
+
+	err := json.Unmarshal(bff, data)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tranformar bytes em array %s", bff)
+	}
+
+	return *data
+}
+
 func (u *User) Save(user *User) (err error) {
 
 	var log = logger.New()
@@ -349,6 +362,10 @@ func (u *User) GetByUuid(uuid string) (user *User, err error) {
 		user = &User{Status: Disabled}
 		return user, nil
 	}
+
+	//? Convertendo bytes
+	user.Accounts = UnmarshalBinary([]byte(res.Val()["accounts"]))
+	user.Adresses = UnmarshalBinary([]byte(res.Val()["adresses"]))
 
 	// ? esses campos não podem ficar expostos
 	user.Password = ""
