@@ -17,34 +17,34 @@ func ApiV1(app *fiber.App) {
 
 	route.Put("/user/password/:uuid", u.UpdateUserPassword)
 	route.Put("/user/document/:uuid", u.UpdateUserDocument)
-	route.Put("/user/restore/:uuid", u.RestoreUser)
+	route.Patch("/user/:uuid", u.RestoreUser)
 	route.Delete("/user/:uuid", u.DeleteUser)
 	route.Put("/user/:uuid", u.UpdateUser)
 	route.Get("/user/:uuid", u.ShowUser)
 	route.Post("/user", u.CreateUser)
-	route.Patch("/user", u.ListUsers)
+	route.Get("/users", u.ListUsers)
 
-	route.Put("/address/restore/:uid", a.RestoreAddress)
+	route.Patch("/address/:uid", a.RestoreAddress)
 	route.Delete("/address/:uid", a.DeleteAddress)
 	route.Put("/address/:uid", a.UpdateAddress)
 	route.Get("/address/:uid", a.ShowAddress)
 	route.Post("/address", a.CreateAddress)
-	route.Patch("/address", a.ListAddress)
+	route.Get("/adresses", a.ListAddress)
 
-	route.Put("/account/restore/:uid", c.RestoreAccount)
+	route.Patch("/account/:uid", c.RestoreAccount)
 	route.Delete("/account/:uid", c.DeleteAccount)
 	route.Put("/account/:uid", c.UpdateAccount)
 	route.Get("/account/:uid", c.ShowAccount)
 	route.Post("/account", c.CreateAccount)
-	route.Patch("/account", c.ListAccounts)
+	route.Get("/accounts", c.ListAccounts)
 
-	route.Put("/product/restore/:uid", p.RestoreProduct)
+	route.Patch("/product/:uid", p.RestoreProduct)
 	route.Put("/product/uid/:uid", p.UpdateProductUid)
 	route.Delete("/product/:uid", p.DeleteProduct)
 	route.Put("/product/:uid", p.UpdateProduct)
 	route.Get("/product/:uid", p.ShowProduct)
 	route.Post("/product", p.CreateProduct)
-	route.Patch("/product", p.ListProducts)
+	route.Get("/products", p.ListProducts)
 
 }
 
