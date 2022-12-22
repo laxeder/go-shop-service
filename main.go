@@ -31,7 +31,6 @@ func main() {
  ? Sistema de contatos: Contacts CRUD
  ? Sistema de login: Auth JWT
 
- ? Sistema de categorias: Product CRUD
  ? Sistema de compras: Buy CRUD
  ? Sistema de favoritos (factory buy)
  ? Sistema de frete: Freight
@@ -53,4 +52,15 @@ func main() {
 	* listar produto por ordem alfabetica
 	* listar produto por ordem de preço
 	* listar produto por data de criação
+
+ ? PICTURE
+
+	* name
+	* mimetype
+	* base64
+
+  TODO retornar result com erro se não tiver permissão
+  TODO routines atualizar permissões
+ 	pegar lista de permissão da account permissão passada ele contem
+
 */
