@@ -203,8 +203,6 @@ func (p *Product) GetByUid(uid string) (product *Product, err error) {
 	product.ForEachCategoryCodes(func(code string) {
 		categoryDatabase, err := category.Repository().GetByCode(code)
 
-		fmt.Printf("code %v", code)
-
 		if err != nil {
 			log.Error().Err(err).Msgf("Erro ao buscar categoria do produto. %v", err)
 			return
@@ -213,6 +211,10 @@ func (p *Product) GetByUid(uid string) (product *Product, err error) {
 		if categoryDatabase.Code == "" {
 			log.Error().Err(err).Msgf("Categoria (%v) não existe. %v", code, err)
 			return
+		}
+
+		if product.Status == Disabled {
+			product = &Product{Status: Disabled}
 		}
 
 		product.Categories = append(product.Categories, *categoryDatabase)
