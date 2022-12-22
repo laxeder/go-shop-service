@@ -27,10 +27,10 @@ type User struct {
 	ConfirmPassword string            `json:"confirm_password,omitempty" redis:"-,omitempty"`
 	Salt            string            `json:"salt,omitempty" redis:"salt,omitempty"`
 	Status          Status            `json:"status,omitempty" redis:"status,omitempty"`
-	Adresses        []address.Address `json:"adresses,omitempty" redis:"adresses,omitempty"`
-	Accounts        []account.Account `json:"accounts,omitempty" redis:"accounts,omitempty"`
-	AdressesUid     []string          `json:"adresses_uid,omitempty" redis:"adresses_uid,omitempty"`
-	AccountsUid     []string          `json:"accounts_uid,omitempty" redis:"accounts_uid,omitempty"`
+	Adresses        []address.Address `json:"adresses,omitempty" redis:"-"`
+	AdressesUid     []string          `json:"-" redis:"adresses_uid,omitempty"`
+	Accounts        []account.Account `json:"accounts,omitempty" redis:"-"`
+	AccountsUid     []string          `json:"-" redis:"accounts_uid,omitempty"`
 	CreatedAt       string            `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt       string            `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }

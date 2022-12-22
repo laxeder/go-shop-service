@@ -15,8 +15,8 @@ type Product struct {
 	Name          string              `json:"name,omitempty" redis:"name,omitempty"`
 	Description   string              `json:"description,omitempty" redis:"description,omitempty"`
 	Pictures      []string            `json:"pictures,omitempty" redis:"pictures,omitempty"`
-	CategoryCodes []string            `json:"category_codes,omitempty" redis:"category_codes,omitempty"`
-	Categories    []category.Category `json:"categories,omitempty" redis:"_"`
+	CategoryCodes []string            `json:"-" redis:"category_codes,omitempty"`
+	Categories    []category.Category `json:"categories,omitempty" redis:"-"`
 	Price         string              `json:"price,omitempty" redis:"price,omitempty"`
 	Promotion     string              `json:"promotion,omitempty" redis:"promotion,omitempty"`
 	Code          string              `json:"code,omitempty" redis:"code,omitempty"`
