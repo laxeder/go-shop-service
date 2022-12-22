@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/laxeder/go-shop-service/pkg/modules/account"
+	"github.com/laxeder/go-shop-service/pkg/modules/address"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
@@ -14,21 +16,23 @@ import (
 var log = logger.New()
 
 type User struct {
-	Uuid            string   `json:"uuid,omitempty" redis:"uuid,omitempty"`
-	Fullname        string   `json:"full_name,omitempty" redis:"full_name,omitempty"`
-	FirstName       string   `json:"first_name,omitempty" redis:"first_name,omitempty"`
-	LastName        string   `json:"last_name,omitempty" redis:"last_name,omitempty"`
-	Document        string   `json:"document,omitempty" redis:"document,omitempty"`
-	Email           string   `json:"email,omitempty" redis:"email,omitempty"`
-	Telephone       string   `json:"telephone,omitempty" redis:"telephone,omitempty"`
-	Password        string   `json:"password,omitempty" redis:"password,omitempty"`
-	ConfirmPassword string   `json:"confirm_password,omitempty" redis:"-,omitempty"`
-	Salt            string   `json:"salt,omitempty" redis:"salt,omitempty"`
-	Status          Status   `json:"status,omitempty" redis:"status,omitempty"`
-	Adresses        []string `json:"adresses,omitempty" redis:"adresses,omitempty"`
-	Accounts        []string `json:"accounts,omitempty" redis:"accounts,omitempty"`
-	CreatedAt       string   `json:"created_at,omitempty" redis:"created_at,omitempty"`
-	UpdatedAt       string   `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
+	Uuid            string            `json:"uuid,omitempty" redis:"uuid,omitempty"`
+	Fullname        string            `json:"full_name,omitempty" redis:"full_name,omitempty"`
+	FirstName       string            `json:"first_name,omitempty" redis:"first_name,omitempty"`
+	LastName        string            `json:"last_name,omitempty" redis:"last_name,omitempty"`
+	Document        string            `json:"document,omitempty" redis:"document,omitempty"`
+	Email           string            `json:"email,omitempty" redis:"email,omitempty"`
+	Telephone       string            `json:"telephone,omitempty" redis:"telephone,omitempty"`
+	Password        string            `json:"password,omitempty" redis:"password,omitempty"`
+	ConfirmPassword string            `json:"confirm_password,omitempty" redis:"-,omitempty"`
+	Salt            string            `json:"salt,omitempty" redis:"salt,omitempty"`
+	Status          Status            `json:"status,omitempty" redis:"status,omitempty"`
+	Adresses        []address.Address `json:"adresses,omitempty" redis:"adresses,omitempty"`
+	Accounts        []account.Account `json:"accounts,omitempty" redis:"accounts,omitempty"`
+	AdressesUid     []string          `json:"adresses_uid,omitempty" redis:"adresses_uid,omitempty"`
+	AccountsUid     []string          `json:"accounts_uid,omitempty" redis:"accounts_uid,omitempty"`
+	CreatedAt       string            `json:"created_at,omitempty" redis:"created_at,omitempty"`
+	UpdatedAt       string            `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
 func New(userByte ...[]byte) (user *User, err error) {
@@ -46,6 +50,62 @@ func New(userByte ...[]byte) (user *User, err error) {
 	}
 
 	return
+}
+
+func (u *User) ForEachAccountsUid(fn func(uid string)) []string {
+	for _, uid := range u.AccountsUid {
+		fn(uid)
+	}
+
+	return u.AccountsUid
+}
+
+func (u *User) ForEachAdressesUid(fn func(uid string)) []string {
+	for _, uid := range u.AdressesUid {
+		fn(uid)
+	}
+
+	return u.AdressesUid
+}
+
+func (u *User) ForEachAccounts(fn func(account account.Account)) []account.Account {
+	for _, account := range u.Accounts {
+		fn(account)
+	}
+
+	return u.Accounts
+}
+
+func (u *User) ForEachAdresses(fn func(address address.Address)) []address.Address {
+	for _, address := range u.Adresses {
+		fn(address)
+	}
+
+	return u.Adresses
+}
+
+func (u *User) ApplyAccountsUid() []string {
+	u.AccountsUid = []string{}
+
+	for _, account := range u.Accounts {
+		u.AccountsUid = append(u.AccountsUid, account.Uid)
+	}
+
+	u.AccountsUid = str.UniqueInSlice(u.AccountsUid)
+
+	return u.AccountsUid
+}
+
+func (u *User) ApplyAdressesUid() []string {
+	u.AdressesUid = []string{}
+
+	for _, address := range u.Adresses {
+		u.AdressesUid = append(u.AdressesUid, address.Uid)
+	}
+
+	u.AdressesUid = str.UniqueInSlice(u.AdressesUid)
+
+	return u.AdressesUid
 }
 
 func (u *User) SetFullname() string {
@@ -93,14 +153,24 @@ func (u *User) SetSalt(salt string) string {
 	return u.Salt
 }
 
-func (u *User) SetAdresses(adresses []string) []string {
+func (u *User) SetAdresses(adresses []address.Address) []address.Address {
 	u.Adresses = adresses
 	return u.Adresses
 }
 
-func (u *User) SetAccounts(accounts []string) []string {
+func (u *User) SetAccounts(accounts []account.Account) []account.Account {
 	u.Accounts = accounts
 	return u.Accounts
+}
+
+func (u *User) SetAdressesUid(adresses []string) []string {
+	u.AdressesUid = adresses
+	return u.AdressesUid
+}
+
+func (u *User) SetAccountsuid(accounts []string) []string {
+	u.AccountsUid = accounts
+	return u.AccountsUid
 }
 
 func (u *User) SetStatus(status Status) Status {
@@ -204,12 +274,20 @@ func (u *User) Inject(user *User) *User {
 		u.Salt = user.Salt
 	}
 
-	if fmt.Sprintf("%T", user.Accounts) == "[]string" {
-		u.Adresses = user.Accounts
+	if fmt.Sprintf("%T", user.Accounts) == "[]user.Accounts" {
+		u.Accounts = user.Accounts
 	}
 
-	if fmt.Sprintf("%T", user.Adresses) == "[]string" {
+	if fmt.Sprintf("%T", user.Adresses) == "[]user.Adresses" {
 		u.Adresses = user.Adresses
+	}
+
+	if fmt.Sprintf("%T", user.AccountsUid) == "[]string" {
+		u.AccountsUid = user.AccountsUid
+	}
+
+	if fmt.Sprintf("%T", user.AdressesUid) == "[]string" {
+		u.AdressesUid = user.AdressesUid
 	}
 
 	if user.Status != Undefined {

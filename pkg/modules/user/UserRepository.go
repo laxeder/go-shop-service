@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/laxeder/go-shop-service/pkg/modules/account"
+	"github.com/laxeder/go-shop-service/pkg/modules/address"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
 	"github.com/laxeder/go-shop-service/pkg/modules/str"
@@ -57,8 +59,11 @@ func (u *User) Save(user *User) (err error) {
 		return err
 	}
 
-	accounts := MarshalBinary(user.Accounts)
-	adresses := MarshalBinary(user.Adresses)
+	user.ApplyAccountsUid()
+	user.ApplyAdressesUid()
+
+	accounts := MarshalBinary(user.AccountsUid)
+	adresses := MarshalBinary(user.AdressesUid)
 
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
@@ -73,8 +78,8 @@ func (u *User) Save(user *User) (err error) {
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
 		rdb.HSet(ctx, key, "status", string(user.Status))
-		rdb.HSet(ctx, key, "adresses", adresses)
-		rdb.HSet(ctx, key, "accounts", accounts)
+		rdb.HSet(ctx, key, "adresses_uid", adresses)
+		rdb.HSet(ctx, key, "accounts_uid", accounts)
 		rdb.HSet(ctx, key, "created_at", user.CreatedAt)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
@@ -103,8 +108,11 @@ func (u *User) Update(user *User) (err error) {
 		return err
 	}
 
-	accounts := MarshalBinary(user.Accounts)
-	adresses := MarshalBinary(user.Adresses)
+	user.ApplyAccountsUid()
+	user.ApplyAdressesUid()
+
+	accounts := MarshalBinary(user.AccountsUid)
+	adresses := MarshalBinary(user.AdressesUid)
 
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
@@ -114,8 +122,8 @@ func (u *User) Update(user *User) (err error) {
 		rdb.HSet(ctx, key, "last_name", user.LastName)
 		rdb.HSet(ctx, key, "email", user.Email)
 		rdb.HSet(ctx, key, "telephone", user.Telephone)
-		rdb.HSet(ctx, key, "adresses", adresses)
-		rdb.HSet(ctx, key, "accounts", accounts)
+		rdb.HSet(ctx, key, "adresses_uid", adresses)
+		rdb.HSet(ctx, key, "accounts_uid", accounts)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
 	})
@@ -290,6 +298,53 @@ func (u *User) GetPasswordByUuid(uuid string) (user *User, err error) {
 	return user, nil
 }
 
+func (u *User) GetByEmail(email string) (user *User, err error) {
+
+	var log = logger.New()
+
+	err = nil
+
+	ctx := context.Background()
+
+	redisClient, err := redisdb.New(redisdb.UserDatabase)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.UserDatabase)
+		return nil, err
+	}
+
+	iter := redisClient.Scan(ctx, 0, "users:*", 0).Iterator()
+	for iter.Next(ctx) {
+		key := iter.Val()
+
+		res := redisClient.HGetAll(ctx, key)
+
+		err = res.Err()
+
+		if err != nil {
+			continue
+		}
+
+		usr := &User{}
+
+		err = res.Scan(usr)
+		if err != nil {
+			continue
+		}
+
+		if usr.Status == Disabled {
+			continue
+		}
+
+		if usr.Email != email {
+			continue
+		}
+
+		user = usr
+	}
+
+	return user, err
+}
+
 func (u *User) GetUuid(uuid string) (user *User, err error) {
 
 	var log = logger.New()
@@ -364,8 +419,48 @@ func (u *User) GetByUuid(uuid string) (user *User, err error) {
 	}
 
 	//? Convertendo bytes
-	user.Accounts = UnmarshalBinary([]byte(res.Val()["accounts"]))
-	user.Adresses = UnmarshalBinary([]byte(res.Val()["adresses"]))
+	user.AccountsUid = UnmarshalBinary([]byte(res.Val()["accounts_uid"]))
+	user.AdressesUid = UnmarshalBinary([]byte(res.Val()["adresses_uid"]))
+
+	user.ForEachAccountsUid(func(uid string) {
+		accountDatabase, err := account.Repository().GetByUid(uid)
+
+		if err != nil {
+			log.Error().Err(err).Msgf("Erro ao buscar conta (%v) do usuário. %v", uid)
+			return
+		}
+
+		if accountDatabase.Uid == "" {
+			log.Error().Msgf("Conta (%v) não existe. %v", uid)
+			return
+		}
+
+		if accountDatabase.Status == account.Disabled {
+			accountDatabase = &account.Account{Status: account.Disabled}
+		}
+
+		user.Accounts = append(user.Accounts, *accountDatabase)
+	})
+
+	user.ForEachAdressesUid(func(uid string) {
+		addressDatabase, err := address.Repository().GetByUid(uid)
+
+		if err != nil {
+			log.Error().Err(err).Msgf("Erro ao buscar endereço (%v) do usuário. %v", uid)
+			return
+		}
+
+		if addressDatabase.Uid == "" {
+			log.Error().Msgf("Endereço (%v) não encontrado. %v", uid, err)
+			return
+		}
+
+		if addressDatabase.Status == address.Disabled {
+			addressDatabase = &address.Address{Status: address.Disabled}
+		}
+
+		user.Adresses = append(user.Adresses, *addressDatabase)
+	})
 
 	// ? esses campos não podem ficar expostos
 	user.Password = ""

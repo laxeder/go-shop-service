@@ -6,10 +6,8 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/modules/user"
 )
 
 var redisClient *redis.Client
@@ -51,22 +49,6 @@ func (a *Address) Save(address *Address) (err error) {
 	if err != nil {
 		log.Error().Err(err).Msgf("Não foi possível inserir o endereço com uid %v no redis.", address.Uid)
 		return err
-	}
-
-	// carrega o usuário da base de dados para atualizar as contas
-	userDatabase, err := user.Repository().GetByUuid(address.Uuid)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário (%v), (%v).", address.Uid, err)
-		return
-	}
-
-	userDatabase.Adresses = append(userDatabase.Adresses, address.Uid)
-	userDatabase.UpdatedAt = date.NowUTC()
-
-	err = user.Repository().Update(userDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar atualizar os endereços do usuário (%v), (%v).", address.Uid, err)
-		return
 	}
 
 	return nil
