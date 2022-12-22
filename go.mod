@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.7.2
 	github.com/arsmn/fiber-swagger/v2 v2.31.1
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
 	github.com/gofiber/fiber/v2 v2.39.0
 	github.com/gofiber/jwt/v3 v3.3.3
@@ -16,8 +17,6 @@ require (
 	github.com/swaggo/swag v1.8.4
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
-
-require golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7 // indirect
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -32,7 +31,6 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
-	github.com/ledongthuc/goterators v1.0.2
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
