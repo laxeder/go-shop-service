@@ -1,4 +1,4 @@
-package routes
+package redis
 
 import (
 	"github.com/gofiber/fiber/v2"
