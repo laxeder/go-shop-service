@@ -1,0 +1,39 @@
+package routes
+
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/laxeder/go-shop-service/pkg/modules/date"
+	"github.com/laxeder/go-shop-service/pkg/modules/logger"
+	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/modules/shopcart"
+)
+
+func DeleteShopCart(ctx *fiber.Ctx) error {
+	var log = logger.New()
+
+	uuid := ctx.Params("uuid")
+
+	shopcartDatabase, err := shopcart.Repository().GetUuid(uuid)
+
+	if err != nil {
+		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
+	}
+
+	if shopcartDatabase.Status != shopcart.Enabled {
+		log.Error().Msgf("Este shopcart já está desativado no sistema. (%v)", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este shopcart já está desativado no sistema."))
+	}
+
+	shopcartDatabase.Uuid = uuid
+	shopcartDatabase.Status = shopcart.Disabled
+	shopcartDatabase.LastAcesses = date.NowUTC()
+
+	err = shopcart.Repository().Delete(shopcartDatabase)
+	if err != nil {
+		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
+	}
+
+	return response.Ctx(ctx).Result(response.Success(204))
+}
