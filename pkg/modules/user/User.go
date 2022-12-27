@@ -27,6 +27,7 @@ type User struct {
 	ConfirmPassword string            `json:"confirm_password,omitempty" redis:"-,omitempty"`
 	Salt            string            `json:"salt,omitempty" redis:"salt,omitempty"`
 	Status          Status            `json:"status,omitempty" redis:"status,omitempty"`
+	Permissions     []string          `json:"permissions,omitempty" redis:"permissions,omitempty"`
 	Adresses        []address.Address `json:"adresses,omitempty" redis:"-"`
 	AdressesUid     []string          `json:"-" redis:"adresses_uid,omitempty"`
 	Accounts        []account.Account `json:"accounts,omitempty" redis:"-"`
@@ -274,6 +275,10 @@ func (u *User) Inject(user *User) *User {
 		u.Salt = user.Salt
 	}
 
+	if fmt.Sprintf("%T", user.Permissions) == "[]string" {
+		u.Permissions = user.Permissions
+	}
+
 	if fmt.Sprintf("%T", user.Accounts) == "[]user.Accounts" {
 		u.Accounts = user.Accounts
 	}
@@ -300,6 +305,24 @@ func (u *User) Inject(user *User) *User {
 
 	if user.UpdatedAt != "" {
 		u.UpdatedAt = user.UpdatedAt
+	}
+
+	return u
+}
+
+func (u *User) InjectMap(userMap any) *User {
+	var log = logger.New()
+
+	b, err := json.Marshal(userMap)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao transformar user map em byte %s", userMap)
+		return u
+	}
+
+	err = json.Unmarshal(b, &u)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao transformar byte em user map %s", userMap)
+		return u
 	}
 
 	return u
