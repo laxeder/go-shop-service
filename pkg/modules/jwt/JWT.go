@@ -20,7 +20,7 @@ type JWT struct {
 	SignatureKey string `json:"signature_key,omitempty"`
 }
 
-func New() (jwtData *JWT) {
+func New(data any) (jwtData *JWT) {
 
 	var log = logger.New()
 
@@ -39,7 +39,7 @@ func New() (jwtData *JWT) {
 		"iat":  date.UTCToTime(claims.Iat).Unix(),
 		"nbf":  date.UTCToTime(claims.Nbf).Unix(),
 		"exp":  date.UTCToTime(claims.Exp).Unix(),
-		"data": claims.Data,
+		"data": data,
 	}
 
 	// cria um objeto para o token

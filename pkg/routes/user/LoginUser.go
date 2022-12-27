@@ -41,7 +41,7 @@ func LoginUser(ctx *fiber.Ctx) error {
 	userDatabase.ConfirmPassword = ""
 	userDatabase.Salt = ""
 
-	token := jwt.New().Token
+	token := jwt.New(userDatabase).Token
 
 	result := fiber.Map{"user": userDatabase, "token": token}
 

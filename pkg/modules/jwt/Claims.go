@@ -1,10 +1,12 @@
 package jwt
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
+	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 )
 
 const (
@@ -37,4 +39,22 @@ func (c *Claims) autoload(session time.Duration) *Claims {
 
 	return c
 
+}
+
+func (c *Claims) InjectMap(claimsMap any) *Claims {
+	var log = logger.New()
+
+	b, err := json.Marshal(claimsMap)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao transformar claims map en byte %s", claimsMap)
+		return c
+	}
+
+	err = json.Unmarshal(b, &c)
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao transformar byte em claims map: %s", claimsMap)
+		return c
+	}
+
+	return c
 }
