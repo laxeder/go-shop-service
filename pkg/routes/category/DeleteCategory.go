@@ -17,13 +17,13 @@ func DeleteCategory(ctx *fiber.Ctx) error {
 	categoryDatabase, err := category.Repository().GetByCode(code)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS044"))
 	}
 
 	// verifica o status da categoria
 	if categoryDatabase.Status != category.Enabled {
 		log.Error().Msgf("Está categoria já está desativado no sistema. (%v)", code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Está categoria já está desativado no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS045", "Está categoria já está desativado no sistema."))
 	}
 
 	categoryDatabase.Status = category.Disabled
@@ -33,7 +33,7 @@ func DeleteCategory(ctx *fiber.Ctx) error {
 	err = category.Repository().Delete(categoryDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS046"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

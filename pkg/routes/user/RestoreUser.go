@@ -21,13 +21,13 @@ func RestoreUser(ctx *fiber.Ctx) error {
 	fmt.Print(userDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar usuário. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS097"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS124"))
 	}
 
 	// verifica o status do usuário
 	if userDatabase.Status != user.Disabled {
 		log.Error().Msgf("Este usuário já está ativo no sistema. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este usuário já está ativo no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS125", "Este usuário já está ativo no sistema."))
 	}
 
 	// muda o status do usuário para ativo
@@ -39,7 +39,7 @@ func RestoreUser(ctx *fiber.Ctx) error {
 	err = user.Repository().Restore(userDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS100", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS126", "O formado dos dados envidados está incorreto."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

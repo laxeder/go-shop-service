@@ -16,12 +16,12 @@ func DeleteFreight(ctx *fiber.Ctx) error {
 	freightDatabase, err := freight.Repository().GetUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS066"))
 	}
 
 	if freightDatabase.Status == freight.Disabled {
 		log.Error().Msgf("Este frete já está desativado no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este frete já está desativado no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS067", "Este frete já está desativado no sistema."))
 	}
 
 	freightDatabase.Uid = uid
@@ -31,7 +31,7 @@ func DeleteFreight(ctx *fiber.Ctx) error {
 	err = freight.Repository().Delete(freightDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS068"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

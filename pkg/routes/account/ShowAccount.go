@@ -17,7 +17,7 @@ func ShowAccount(ctx *fiber.Ctx) error {
 	accountData, err := account.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS130"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS018"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, accountData))

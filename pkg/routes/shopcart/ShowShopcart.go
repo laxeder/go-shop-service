@@ -16,7 +16,7 @@ func ShowShopCart(ctx *fiber.Ctx) error {
 	shopcartDatabase, err := shopcart.Repository().GetByUuid(uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS107"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, shopcartDatabase))

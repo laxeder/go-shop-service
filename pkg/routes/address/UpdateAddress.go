@@ -19,14 +19,14 @@ func UpdateAddress(ctx *fiber.Ctx) error {
 	addressBody, err := address.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS085", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS036", "O formado dos dados envidados está incorreto."))
 	}
 
 	// carrega o endereço da base de dados
 	addressDatabase, err := address.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar endereço %v.", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS081", "Erro ao tentar validar endereço."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS037", "Erro ao tentar validar endereço."))
 	}
 
 	// injecta dos dados novos o lugar dos dsdos trazidos d abase de dados
@@ -37,7 +37,7 @@ func UpdateAddress(ctx *fiber.Ctx) error {
 	err = address.Repository().Update(addressDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do endereço (%v)", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS038"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

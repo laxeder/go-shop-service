@@ -19,13 +19,13 @@ func RestoreProduct(ctx *fiber.Ctx) error {
 	productDatabase, err := product.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar produto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS097"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS086"))
 	}
 
 	// verifica o status do produto
 	if productDatabase.Status != product.Disabled {
 		log.Error().Msgf("Este produto já está ativo no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este produto já está ativo no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS087", "Este produto já está ativo no sistema."))
 	}
 
 	// muda o status do produto para ativo
@@ -37,7 +37,7 @@ func RestoreProduct(ctx *fiber.Ctx) error {
 	err = product.Repository().Restore(productDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS100", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS88", "O formado dos dados envidados está incorreto."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

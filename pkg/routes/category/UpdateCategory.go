@@ -19,20 +19,20 @@ func UpdateCategory(ctx *fiber.Ctx) error {
 	categoryBody, err := category.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS085", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS056", "O formado dos dados envidados está incorreto."))
 	}
 
 	// verifica e compara a categoria recebida
 	if categoryBody.Code != "" && code != categoryBody.Code {
 		log.Error().Msgf("Não é possível atualizar a categoria %v para o %v", code, categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS086", "Não é possível atualizar a categoria "+code+" para o "+categoryBody.Code))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS057", "Não é possível atualizar a categoria "+code+" para o "+categoryBody.Code))
 	}
 
 	// carrega a categoria da base de dados
 	categoryDatabase, err := category.Repository().GetByCode(code)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar a categoria %v.", categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS081", "Erro ao tentar validar a categoria."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS058", "Erro ao tentar validar a categoria."))
 	}
 
 	// injeta os dados novos no lugar dos dados trazidos da base de dados
@@ -44,7 +44,7 @@ func UpdateCategory(ctx *fiber.Ctx) error {
 	err = category.Repository().Update(categoryDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório da categoria (%v)", categoryBody.Code)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS059"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

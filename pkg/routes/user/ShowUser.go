@@ -16,7 +16,7 @@ func ShowUser(ctx *fiber.Ctx) error {
 	userDatabase, err := user.Repository().GetByUuid(uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS127"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, userDatabase))

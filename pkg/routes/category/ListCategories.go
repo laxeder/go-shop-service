@@ -14,7 +14,7 @@ func ListCategories(ctx *fiber.Ctx) error {
 	categories, err := category.Repository().GetList()
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar listar categorias. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS047"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, categories))

@@ -19,7 +19,7 @@ func PermissionsCheck(permission string) func(ctx *fiber.Ctx) error {
 		spew.Dump(user.Permissions, permission)
 
 		if !utils.Contains(user.Permissions, permission) {
-			return response.Ctx(ctx).Result(response.Error(400, "GSS034", "Vocẽ não tem permissão para acessar essa rota."))
+			return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Vocẽ não tem permissão para acessar essa rota."))
 		}
 
 		//TODO: Criar repositorio para pegar as permissão do user

@@ -17,13 +17,13 @@ func DeleteProduct(ctx *fiber.Ctx) error {
 	productDatabase, err := product.Repository().GetUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS082"))
 	}
 
 	// verifica o status do produto
 	if productDatabase.Status != product.Enabled {
 		log.Error().Msgf("Este produto já está desativado no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este produto já está desativado no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS083", "Este produto já está desativado no sistema."))
 	}
 
 	productDatabase.Status = product.Disabled
@@ -33,7 +33,7 @@ func DeleteProduct(ctx *fiber.Ctx) error {
 	err = product.Repository().Delete(productDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

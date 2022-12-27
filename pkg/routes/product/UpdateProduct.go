@@ -19,20 +19,20 @@ func UpdateProduct(ctx *fiber.Ctx) error {
 	productBody, err := product.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS085", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS090", "O formado dos dados envidados está incorreto."))
 	}
 
 	// verifica e compara o produto recebido
 	if productBody.Uid != "" && uid != productBody.Uid {
 		log.Error().Msgf("Não é possível atualizar o produto %v para o %v", uid, productBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS086", "Não é possível atualizar o produto "+uid+" para o "+productBody.Uid))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS091", "Não é possível atualizar o produto "+uid+" para o "+productBody.Uid))
 	}
 
 	// carrega o produto da base de dados
 	productDatabase, err := product.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar o produto %v.", productBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS081", "Erro ao tentar validar o produto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS092", "Erro ao tentar validar o produto."))
 	}
 
 	// injecta dos dados novos no lugar dos dados trazidos da base de dados
@@ -44,7 +44,7 @@ func UpdateProduct(ctx *fiber.Ctx) error {
 	err = product.Repository().Update(productDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do produto (%v)", productBody.Uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS093"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

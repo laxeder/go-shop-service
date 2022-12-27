@@ -17,24 +17,24 @@ func LoginUser(ctx *fiber.Ctx) error {
 	userBody, err := user.NewUserLogin(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos ou json está mal formatado. %s", userBody)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Os campos enviados estão incorretos ou json está mal formatado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS120", "Os campos enviados estão incorretos ou json está mal formatado."))
 	}
 
 	userDatabase, err := user.Repository().GetByEmail(userBody.Email)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS121"))
 	}
 
 	if userDatabase == nil {
 		log.Error().Msgf("Usuário não encontrado. %s", userBody)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Usuário não encontrado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS122", "Usuário não encontrado."))
 	}
 
 	hashPassword := userBody.HashPassword(userDatabase.Salt, userBody.Password)
 
 	if userDatabase.Password != hashPassword {
-		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Email ou senha incorretos."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS123", "Email ou senha incorretos."))
 	}
 
 	userDatabase.Password = ""

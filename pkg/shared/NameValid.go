@@ -12,17 +12,17 @@ func NameValid(name string) *response.Result {
 
 	if name == "" {
 		log.Error().Msgf("O campo do nome não pode ser vazio. (%v)", name)
-		return response.Error(400, "GSS004", "O campo do nome não pode ser vazio.")
+		return response.Error(400, "GSS143", "O campo do nome não pode ser vazio.")
 	}
 
 	if len(name) <= 2 {
 		log.Error().Msgf("O nome não poder ser menor que 2 caracteres. (%v)", name)
-		return response.Error(400, "GSS005", "O nome não poder ser menor que 2 caracteres.")
+		return response.Error(400, "GSS144", "O nome não poder ser menor que 2 caracteres.")
 	}
 
 	if regex.HasNumber.MatchString(name) {
 		log.Error().Msgf("O nome não pode conter número. (%v)", name)
-		return response.Error(400, "GSS006", "O nome não pode conter número.")
+		return response.Error(400, "GSS145", "O nome não pode conter número.")
 	}
 
 	return response.Success(200)

@@ -14,7 +14,7 @@ func ListUsers(ctx *fiber.Ctx) error {
 	users, err := user.Repository().GetList()
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar listar usuários. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS119"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, users))

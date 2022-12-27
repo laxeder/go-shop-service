@@ -16,7 +16,7 @@ func ShowFreight(ctx *fiber.Ctx) error {
 	freightData, err := freight.Repository().GetByUid(uid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do frete %v", uid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS130"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS073"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, freightData))

@@ -19,13 +19,13 @@ func RestoreCategory(ctx *fiber.Ctx) error {
 	categoryDatabase, err := category.Repository().GetByCode(code)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar categoria. (%v)", code)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS097"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS048"))
 	}
 
 	// verifica o status da categoria
 	if categoryDatabase.Status != category.Disabled {
 		log.Error().Msgf("Este categoria já está ativo no sistema. (%v)", code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este categoria já está ativo no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS049", "Este categoria já está ativo no sistema."))
 	}
 
 	// muda o status da categoria para ativo
@@ -37,7 +37,7 @@ func RestoreCategory(ctx *fiber.Ctx) error {
 	err = category.Repository().Restore(categoryDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS100", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS050", "O formado dos dados envidados está incorreto."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

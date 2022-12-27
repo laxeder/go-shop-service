@@ -18,13 +18,13 @@ func UpdateShopCart(ctx *fiber.Ctx) error {
 	shopcartBody, err := shopcart.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS085", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS108", "O formado dos dados envidados está incorreto."))
 	}
 
 	shopcartDatabase, err := shopcart.Repository().GetByUuid(uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS109"))
 	}
 
 	shopcartDatabase.Inject(shopcartBody)
@@ -34,7 +34,7 @@ func UpdateShopCart(ctx *fiber.Ctx) error {
 	err = shopcart.Repository().Update(shopcartDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do shopcart (%v)", shopcartBody.Uuid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS110"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

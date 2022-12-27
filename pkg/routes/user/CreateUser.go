@@ -19,42 +19,27 @@ func CreateUser(ctx *fiber.Ctx) error {
 	userBody, err := user.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos ou json está mal formatado. %s", userBody)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS002", "Os campos enviados estão incorretos ou json está mal formatado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS111", "Os campos enviados estão incorretos ou json está mal formatado."))
 	}
 
-	// TODO validar
-	// valida os campos de entrada
-	// checkUser := userBody.Valid()
-	// if checkUser.Status != 200 {
-	// 	return response.Ctx(ctx).Result(checkUser)
-	// }
-
-	//!##################################################################################################################//
-	//! VERIFICA SE O DOCUMENTO DO USUÁRIO EXISTE NA BASE DE DADOS
-	//!##################################################################################################################//
 	userDatabase, err := user.Repository().GetUuid(userBody.Uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos (%v). %v", userBody.Document, err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS112"))
 	}
 
 	// verifica se a conta está desabilitada
 	if userDatabase.Status == user.Disabled {
 		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", userBody.Document)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS032", "Esta conta está desabilitada por tempo indeterminado."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS113", "Esta conta está desabilitada por tempo indeterminado."))
 	}
 
 	// verifica se o documento existe
 	if len(userDatabase.Document) > 0 {
 		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", userBody.Document)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS034", "Este documento já existe na nossa base de dados."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS114", "Este documento já existe na nossa base de dados."))
 	}
 
-	//!##################################################################################################################//
-	//! CRIAR UM NOVO USUÁRIO E ARMAZENA NA BASE DE DADOS
-	//!##################################################################################################################//
-
-	// cria um novo usuário
 	userBody.NewUuid()
 	userBody.NewSalt()
 	userBody.NewHashPassword()
@@ -68,7 +53,7 @@ func CreateUser(ctx *fiber.Ctx) error {
 	err = user.Repository().Save(userBody)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", userBody.Document)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS003"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS115"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))

@@ -19,13 +19,13 @@ func UpdateUser(ctx *fiber.Ctx) error {
 	userBody, err := user.New(body)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS085", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS130", "O formado dos dados envidados está incorreto."))
 	}
 
 	userDatabase, err := user.Repository().GetByUuid(uuid)
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS131"))
 	}
 
 	// injecta dos dados novos o lugar dos dsdos trazidos d abase de dados
@@ -37,7 +37,7 @@ func UpdateUser(ctx *fiber.Ctx) error {
 	err = user.Repository().Update(userDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do usuário (%v)", userBody.Document)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS084"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS132"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

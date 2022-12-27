@@ -20,12 +20,12 @@ func RestoreShopCart(ctx *fiber.Ctx) error {
 	fmt.Print(shopcartDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar shopcart. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS097"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS104"))
 	}
 
 	if shopcartDatabase.Status != shopcart.Disabled {
 		log.Error().Msgf("Este shopcart já está ativo no sistema. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este shopcart já está ativo no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS105", "Este shopcart já está ativo no sistema."))
 	}
 
 	shopcartDatabase.Uuid = uuid
@@ -36,7 +36,7 @@ func RestoreShopCart(ctx *fiber.Ctx) error {
 	err = shopcart.Repository().Restore(shopcartDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS100", "O formado dos dados envidados está incorreto."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS106", "O formado dos dados envidados está incorreto."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

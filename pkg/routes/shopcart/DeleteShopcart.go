@@ -17,12 +17,12 @@ func DeleteShopCart(ctx *fiber.Ctx) error {
 
 	if err != nil {
 		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS087"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS100"))
 	}
 
 	if shopcartDatabase.Status != shopcart.Enabled {
 		log.Error().Msgf("Este shopcart já está desativado no sistema. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS060", "Este shopcart já está desativado no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS101", "Este shopcart já está desativado no sistema."))
 	}
 
 	shopcartDatabase.Uuid = uuid
@@ -32,7 +32,7 @@ func DeleteShopCart(ctx *fiber.Ctx) error {
 	err = shopcart.Repository().Delete(shopcartDatabase)
 	if err != nil {
 		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS090"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS102"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

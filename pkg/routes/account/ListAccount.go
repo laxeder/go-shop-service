@@ -14,7 +14,7 @@ func ListAccounts(ctx *fiber.Ctx) error {
 	accounts, err := account.Repository().GetList()
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar listar contas %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS014"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, accounts))

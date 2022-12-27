@@ -14,7 +14,7 @@ func ListShopCarts(ctx *fiber.Ctx) error {
 	shopcarts, err := shopcart.Repository().GetList()
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar listar carrinhos de compras. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS103"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, shopcarts))
