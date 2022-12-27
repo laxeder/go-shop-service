@@ -3,6 +3,7 @@ package freight
 import (
 	"encoding/json"
 
+	"github.com/laxeder/go-shop-service/pkg/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -36,6 +37,11 @@ func New(freightByte ...[]byte) (freight *Freight, err error) {
 	}
 
 	return
+}
+
+func (f *Freight) NewUid() string {
+	f.Uid = utils.Nonce()
+	return f.Uid
 }
 
 func (f *Freight) Inject(freight *Freight) *Freight {
