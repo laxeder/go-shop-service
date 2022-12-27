@@ -17,7 +17,7 @@ type Product struct {
 	Pictures      []string            `json:"pictures,omitempty" redis:"pictures,omitempty"`
 	CategoryCodes []string            `json:"-" redis:"category_codes,omitempty"`
 	Categories    []category.Category `json:"categories,omitempty" redis:"-"`
-	Price         string              `json:"price,omitempty" redis:"price,omitempty"`
+	Price         int                 `json:"price,omitempty" redis:"price,omitempty"`
 	Promotion     string              `json:"promotion,omitempty" redis:"promotion,omitempty"`
 	Code          string              `json:"code,omitempty" redis:"code,omitempty"`
 	Weight        string              `json:"weight,omitempty" redis:"weight,omitempty"`
@@ -142,7 +142,7 @@ func (p *Product) SetPictures(pictures []string) []string {
 	return p.Pictures
 }
 
-func (p *Product) SetPrice(price string) string {
+func (p *Product) SetPrice(price int) int {
 	p.Price = price
 	return p.Price
 }
@@ -206,7 +206,7 @@ func (p *Product) Inject(product *Product) *Product {
 		p.Pictures = product.Pictures
 	}
 
-	if product.Price != "" {
+	if product.Price != 0 {
 		p.Price = product.Price
 	}
 
