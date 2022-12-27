@@ -304,6 +304,9 @@ func (s *ShopCart) GetByUuid(uuid string) (shopcart *ShopCart, err error) {
 		shopcart.Freights = append(shopcart.Freights, *freightDatabase)
 	})
 
+	shopcart.FreightResume()
+	shopcart.Resume()
+
 	return shopcart, nil
 }
 
