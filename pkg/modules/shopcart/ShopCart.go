@@ -180,7 +180,7 @@ func (s *ShopCart) Inject(shopcart *ShopCart) *ShopCart {
 		s.Uuid = shopcart.Uuid
 	}
 
-	if fmt.Sprintf("%T", shopcart.Products) == "[]shopcart.Products" {
+	if fmt.Sprintf("%T", shopcart.Products) == "[]product.Product" {
 		s.Products = shopcart.Products
 	}
 
@@ -192,7 +192,7 @@ func (s *ShopCart) Inject(shopcart *ShopCart) *ShopCart {
 		s.ProductsTotal = shopcart.ProductsTotal
 	}
 
-	if fmt.Sprintf("%T", shopcart.Freights) == "[]shopcart.Freights" {
+	if fmt.Sprintf("%T", shopcart.Freights) == "[]freight.Freight" {
 		s.Freights = shopcart.Freights
 	}
 

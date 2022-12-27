@@ -77,7 +77,7 @@ func ApiV1(app *fiber.App) {
 	route.Put("/shopcart/:uuid", mid.JWT, spc.UpdateShopCart)
 	route.Get("/shopcart/:uuid", mid.JWT, spc.ShowShopCart)
 	route.Post("/shopcart", mid.JWT, spc.CreateShopCart)
-	route.Get("/categories", mid.JWT, spc.ListShopCarts)
+	route.Get("/shopcarts", mid.JWT, spc.ListShopCarts)
 
 	//? ******************************** Rotas do frete ********************************
 
@@ -86,7 +86,7 @@ func ApiV1(app *fiber.App) {
 	route.Put("/freight/:uid", mid.JWT, fgt.UpdateFreight)
 	route.Get("/freight/:uid", mid.JWT, fgt.ShowFreight)
 	route.Post("/freight", mid.JWT, fgt.CreateFreight)
-	route.Get("/categories", mid.JWT, fgt.ListFreights)
+	route.Get("/freights", mid.JWT, fgt.ListFreights)
 
 }
 
