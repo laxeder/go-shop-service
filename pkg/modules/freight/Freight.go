@@ -21,19 +21,68 @@ type Freight struct {
 	CreatedAt       string      `json:"created_at,omitempty" redis:"created_at,omitempty"`
 }
 
-func New(userByte ...[]byte) (freight *Freight, err error) {
+func New(freightByte ...[]byte) (freight *Freight, err error) {
 	freight = &Freight{}
 	err = nil
 
-	if len(userByte) == 0 {
+	if len(freightByte) == 0 {
 		return
 	}
 
-	err = json.Unmarshal(userByte[0], freight)
+	err = json.Unmarshal(freightByte[0], freight)
 	if err != nil {
-		log.Error().Err(err).Msgf("O json do frete está incorreto. %s", userByte[0])
+		log.Error().Err(err).Msgf("O json do frete está incorreto. %s", freightByte[0])
 		return
 	}
 
 	return
+}
+
+func (f *Freight) Inject(freight *Freight) *Freight {
+
+	if freight.Uid != "" {
+		f.Uid = freight.Uid
+	}
+
+	if freight.ZipcodeSender != "" {
+		f.ZipcodeSender = freight.ZipcodeSender
+	}
+
+	if freight.ZipcodeReceiver != "" {
+		f.ZipcodeReceiver = freight.ZipcodeReceiver
+	}
+
+	if freight.Type != "" {
+		f.Type = freight.Type
+	}
+
+	if freight.Price != 0 {
+		f.Price = freight.Price
+	}
+
+	if freight.Weight != 0 {
+		f.Weight = freight.Weight
+	}
+
+	if freight.Heigth != 0 {
+		f.Heigth = freight.Heigth
+	}
+
+	if freight.Weight != 0 {
+		f.Weight = freight.Weight
+	}
+
+	if freight.Lenght != 0 {
+		f.Lenght = freight.Lenght
+	}
+
+	if freight.CreatedAt != "" {
+		f.CreatedAt = freight.CreatedAt
+	}
+
+	if freight.UpdatedAt != "" {
+		f.UpdatedAt = freight.UpdatedAt
+	}
+
+	return f
 }

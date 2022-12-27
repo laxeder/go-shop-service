@@ -2,6 +2,7 @@ package shopcart
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/product"
@@ -154,7 +155,7 @@ func (s *ShopCart) RemoveLoteFreights(freights []freight.Freight) {
 func (s *ShopCart) ApplyFreightUid() []string {
 	s.FreightsUid = []string{}
 
-	for _, freight := range s.Products {
+	for _, freight := range s.Freights {
 		s.FreightsUid = append(s.FreightsUid, freight.Uid)
 	}
 
@@ -169,4 +170,59 @@ func (s *ShopCart) ForEachFreightsUid(fn func(uid string)) []string {
 	}
 
 	return s.FreightsUid
+}
+
+//? ***********************************************************
+
+func (s *ShopCart) Inject(shopcart *ShopCart) *ShopCart {
+
+	if shopcart.Uuid != "" {
+		s.Uuid = shopcart.Uuid
+	}
+
+	if fmt.Sprintf("%T", shopcart.Products) == "[]shopcart.Products" {
+		s.Products = shopcart.Products
+	}
+
+	if fmt.Sprintf("%T", shopcart.ProductsUid) == "[]string" {
+		s.ProductsUid = shopcart.ProductsUid
+	}
+
+	if shopcart.ProductsTotal != 0 {
+		s.ProductsTotal = shopcart.ProductsTotal
+	}
+
+	if fmt.Sprintf("%T", shopcart.Freights) == "[]shopcart.Freights" {
+		s.Freights = shopcart.Freights
+	}
+
+	if fmt.Sprintf("%T", shopcart.FreightsUid) == "[]string" {
+		s.FreightsUid = shopcart.FreightsUid
+	}
+
+	if shopcart.FreightsTotal != 0 {
+		s.FreightsTotal = shopcart.FreightsTotal
+	}
+
+	if shopcart.Items != 0 {
+		s.Items = shopcart.Items
+	}
+
+	if shopcart.Taxes != 0 {
+		s.Taxes = shopcart.Taxes
+	}
+
+	if shopcart.SubTotal != 0 {
+		s.SubTotal = shopcart.SubTotal
+	}
+
+	if shopcart.Total != 0 {
+		s.Total = shopcart.Total
+	}
+
+	if shopcart.LastAcesses != "" {
+		s.LastAcesses = shopcart.LastAcesses
+	}
+
+	return s
 }
