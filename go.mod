@@ -3,7 +3,6 @@ module github.com/laxeder/go-shop-service
 go 1.19
 
 require (
-	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.7.2
 	github.com/arsmn/fiber-swagger/v2 v2.31.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
