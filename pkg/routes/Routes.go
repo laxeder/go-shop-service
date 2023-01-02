@@ -75,6 +75,9 @@ func ApiV1(app *fiber.App) {
 	route.Patch("/shopcart/:uuid", mid.JWT, spc.RestoreShopCart)
 	route.Delete("/shopcart/:uuid", mid.JWT, spc.DeleteShopCart)
 	route.Put("/shopcart/:uuid", mid.JWT, spc.UpdateShopCart)
+	route.Post("/shopcart/:uuid/product", mid.JWT, spc.AddShopCartProduct)
+	route.Delete("/shopcart/:uuid/product", mid.JWT, spc.RemoveShopCartProduct)
+
 	route.Get("/shopcart/:uuid", mid.JWT, spc.ShowShopCart)
 	route.Post("/shopcart", mid.JWT, spc.CreateShopCart)
 	route.Get("/shopcarts", mid.JWT, spc.ListShopCarts)
