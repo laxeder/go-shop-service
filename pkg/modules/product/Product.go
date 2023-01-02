@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/laxeder/go-shop-service/pkg/modules/category"
+	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
@@ -17,6 +18,8 @@ type Product struct {
 	Pictures      []string            `json:"pictures,omitempty" redis:"pictures,omitempty"`
 	CategoryCodes []string            `json:"-" redis:"category_codes,omitempty"`
 	Categories    []category.Category `json:"categories,omitempty" redis:"-"`
+	Freights      []freight.Freight   `json:"freights,omitempty" redis:"freights,omitempty"` //? Lista de fretes dísponivel para esse produto
+	Freight       freight.Freight     `json:"freight,omitempty" redis:"-"`                   //? Frete selcionado para esse produto
 	Price         int                 `json:"price,omitempty" redis:"price,omitempty"`
 	Promotion     string              `json:"promotion,omitempty" redis:"promotion,omitempty"`
 	Code          string              `json:"code,omitempty" redis:"code,omitempty"`
