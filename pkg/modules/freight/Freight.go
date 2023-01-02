@@ -39,6 +39,12 @@ func New(freightByte ...[]byte) (freight *Freight, err error) {
 	return
 }
 
+func (f *Freight) Calc() int {
+	f.Price = 1000
+
+	return f.Price
+}
+
 func (f *Freight) NewUid() string {
 	f.Uid = utils.Nonce()
 	return f.Uid
