@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -19,7 +20,7 @@ func Repository() *ShopCart {
 	return &ShopCart{}
 }
 
-func MarshalBinary(str []string) (data []byte) {
+func MarshalBinary(str []product.ProductResume) (data []byte) {
 	var log = logger.New()
 
 	data, err := json.Marshal(str)
@@ -30,17 +31,15 @@ func MarshalBinary(str []string) (data []byte) {
 	return
 }
 
-func UnmarshalBinary(bff []byte) []string {
+func UnmarshalBinary(bff []byte) (data any) {
 	var log = logger.New()
-
-	data := &[]string{}
 
 	err := json.Unmarshal(bff, data)
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tranformar bytes em array %s", bff)
 	}
 
-	return *data
+	return
 }
 
 func (s *ShopCart) Save(shopcart *ShopCart) (err error) {
@@ -58,19 +57,17 @@ func (s *ShopCart) Save(shopcart *ShopCart) (err error) {
 		return err
 	}
 
-	shopcart.ApplyFreightUid()
-	shopcart.ApplyProductsUid()
+	shopcart.ProductsResume = shopcart.ReduceProducts(shopcart.Products)
 
-	products := MarshalBinary(shopcart.ProductsUid)
-	freights := MarshalBinary(shopcart.FreightsUid)
+	spew.Dump((shopcart.ProductsResume))
 
 	key := fmt.Sprintf("shopcarts:%v", uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uuid", uuid)
-		rdb.HSet(ctx, key, "products_uid", products)
-		rdb.HSet(ctx, key, "freights_uid", freights)
+		rdb.HSet(ctx, key, "products_resume", MarshalBinary(shopcart.ProductsResume))
 		rdb.HSet(ctx, key, "taxes", shopcart.Taxes)
+		rdb.HSet(ctx, key, "discount_percentage", shopcart.DiscountPercentage)
 		rdb.HSet(ctx, key, "status", string(shopcart.Status))
 		rdb.HSet(ctx, key, "last_acesses", shopcart.LastAcesses)
 		return nil
@@ -99,18 +96,14 @@ func (s *ShopCart) Update(shopcart *ShopCart) (err error) {
 		return err
 	}
 
-	shopcart.ApplyFreightUid()
-	shopcart.ApplyProductsUid()
-
-	products := MarshalBinary(shopcart.ProductsUid)
-	freights := MarshalBinary(shopcart.FreightsUid)
+	shopcart.ProductsResume = shopcart.ReduceProducts(shopcart.Products)
 
 	key := fmt.Sprintf("shopcarts:%v", uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "products_uid", products)
-		rdb.HSet(ctx, key, "freights_uid", freights)
+		rdb.HSet(ctx, key, "products_resume", MarshalBinary(shopcart.ProductsResume))
 		rdb.HSet(ctx, key, "taxes", shopcart.Taxes)
+		rdb.HSet(ctx, key, "discount_percentage", shopcart.DiscountPercentage)
 		rdb.HSet(ctx, key, "last_acesses", shopcart.LastAcesses)
 		return nil
 	})
@@ -261,49 +254,61 @@ func (s *ShopCart) GetByUuid(uuid string) (shopcart *ShopCart, err error) {
 	}
 
 	//? Convertendo bytes
-	shopcart.ProductsUid = UnmarshalBinary([]byte(res.Val()["products_uid"]))
-	shopcart.FreightsUid = UnmarshalBinary([]byte(res.Val()["freights_uid"]))
+	productRes, er := product.UnmarshalProductsResume([]byte(res.Val()["products_resume"]))
 
-	shopcart.ForEachProductsUid(func(uid string) {
-		productDatabase, err := product.Repository().GetByUid(uid)
+	if er != nil {
+		return nil, er
+	}
 
-		if err != nil {
-			log.Error().Err(err).Msgf("Erro ao buscar produto (%v) do carrinho de compras. %v", uid)
-			return
+	shopcart.ProductsResume = *productRes
+
+	var productsResume []product.ProductResume
+
+	for _, productRes := range shopcart.ProductsResume {
+		productDatabase, er := product.Repository().GetByUid(productRes.ProductUid)
+
+		if er != nil {
+			log.Error().Err(er).Msgf("Erro ao buscar produto (%v) do carrinho de compras.", productRes.ProductUid)
+			continue
 		}
 
 		if productDatabase.Uid == "" {
-			log.Error().Msgf("Produto (%v) não existe. %v", uid)
-			return
+			log.Error().Msgf("Produto (%v) não existe.", productRes.ProductUid)
+			continue
 		}
 
 		if productDatabase.Status == product.Disabled {
-			productDatabase = &product.Product{Status: product.Disabled}
+			continue
 		}
 
-		shopcart.Products = append(shopcart.Products, *productDatabase)
-	})
-
-	shopcart.ForEachFreightsUid(func(uid string) {
-		freightDatabase, err := freight.Repository().GetByUid(uid)
+		freightDatabase, err := freight.Repository().GetByUid(productRes.FreightUid)
 
 		if err != nil {
-			log.Error().Err(err).Msgf("Erro ao buscar frete (%v) do carrinho de compras. %v", uid)
-			return
+			log.Error().Err(err).Msgf("Erro ao buscar frete (%v) do carrinho de compras.", productRes.FreightUid)
+			continue
 		}
 
 		if freightDatabase.Uid == "" {
-			log.Error().Msgf("Frete (%v) não encontrado. %v", uid, err)
-			return
+			log.Error().Msgf("Frete (%v) não encontrado.", productRes.FreightUid)
+			continue
 		}
 
 		if freightDatabase.Status == freight.Disabled {
-			freightDatabase = &freight.Freight{Status: freight.Disabled}
+			continue
 		}
 
-		shopcart.Freights = append(shopcart.Freights, *freightDatabase)
-	})
+		productDatabase.Freight = *freightDatabase
+		productDatabase.Freight.ZipcodeReceiver = productRes.ZipcodeReceiver
+		productDatabase.Freight.Calc()
 
+		productRes.Product = *productDatabase
+
+		productsResume = append(productsResume, productRes)
+	}
+
+	shopcart.ProductsResume = productsResume
+
+	shopcart.ExpandProducts(shopcart.ProductsResume)
 	shopcart.FreightResume()
 	shopcart.Resume()
 
