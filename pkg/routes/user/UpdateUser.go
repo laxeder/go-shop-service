@@ -1,11 +1,12 @@
 package routes
 
 import (
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
+	"github.com/laxeder/go-shop-service/pkg/shared"
 )
 
 func UpdateUser(ctx *fiber.Ctx) error {
@@ -28,17 +29,23 @@ func UpdateUser(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS131"))
 	}
 
-	// injecta dos dados novos o lugar dos dsdos trazidos d abase de dados
-	userDatabase.Inject(userBody)
-	userDatabase.UpdatedAt = date.NowUTC()
-	userDatabase.SetFullname()
+	spew.Dump(userDatabase)
 
-	// guarda as alterações do usuário na base de dados
-	err = user.Repository().Update(userDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do usuário (%v)", userBody.Document)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS132"))
-	}
+	shared.Inject(userBody, userDatabase)
+
+	spew.Dump(userDatabase)
+
+	// injecta dos dados novos o lugar dos dsdos trazidos d abase de dados
+	// userDatabase.Inject(userBody)
+	// userDatabase.UpdatedAt = date.NowUTC()
+	// userDatabase.SetFullname()
+
+	// // guarda as alterações do usuário na base de dados
+	// err = user.Repository().Update(userDatabase)
+	// if err != nil {
+	// 	log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do usuário (%v)", userBody.Document)
+	// 	return response.Ctx(ctx).Result(response.ErrorDefault("GSS132"))
+	// }
 
 	return response.Ctx(ctx).Result(response.Success(204))
 }

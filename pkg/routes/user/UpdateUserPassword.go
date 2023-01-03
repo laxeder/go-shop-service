@@ -55,8 +55,8 @@ func UpdateUserPassword(ctx *fiber.Ctx) error {
 
 	// injeta os novos valores no lugar dos dados recuperados da base de dados
 	userDatabase.Inject(userBody)
-	userDatabase.NewSalt()
-	userDatabase.NewHashPassword()
+	// userDatabase.NewSalt()
+	// userDatabase.NewHashPassword()
 	userDatabase.UpdatedAt = date.NowUTC()
 
 	// guarda a alterações na base de dados do usuário

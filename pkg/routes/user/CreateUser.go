@@ -40,9 +40,9 @@ func CreateUser(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.Error(400, "GSS114", "Este documento já existe na nossa base de dados."))
 	}
 
-	userBody.NewUuid()
-	userBody.NewSalt()
-	userBody.NewHashPassword()
+	// userBody.NewUuid()
+	// userBody.NewSalt()
+	// userBody.NewHashPassword()
 	userBody.SetFullname()
 
 	userBody.Status = user.Enabled
