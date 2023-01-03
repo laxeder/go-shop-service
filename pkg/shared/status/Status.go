@@ -7,7 +7,3 @@ const (
 	Enabled   Status = "enabled"
 	Disabled  Status = "disabled"
 )
-
-type DatabaseSatatus struct {
-	Status Status `redis:"status,omitempty"`
-}

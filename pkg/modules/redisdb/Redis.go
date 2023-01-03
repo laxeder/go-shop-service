@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	stt "github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
 var log = logger.New()
@@ -39,40 +38,6 @@ func Health() (string, error) {
 	return fmt.Sprintf("[REDIS] UP %v", client.Time(ctx).String()), nil
 }
 
-func GetStatus(database Nodedatabase, key string) (status stt.Status, err error) {
-
-	ctx := context.Background()
-	status = stt.Disabled
-	err = nil
-
-	redisClient, err := New(database)
-	if err != nil {
-		return
-	}
-
-	res := redisClient.HMGet(ctx, key, "status")
-	err = res.Err()
-
-	if err != nil {
-		return
-	}
-
-	databaseStatus := &stt.DatabaseSatatus{}
-
-	err = res.Scan(databaseStatus)
-	if err != nil {
-		return
-	}
-
-	if databaseStatus.Status == "" {
-		return
-	}
-
-	status = databaseStatus.Status
-
-	return
-}
-
 func Exists(database Nodedatabase, key string, field string) (exists bool, err error) {
 
 	ctx := context.Background()
@@ -80,11 +45,13 @@ func Exists(database Nodedatabase, key string, field string) (exists bool, err e
 	err = nil
 
 	redisClient, err := New(database)
+
 	if err != nil {
 		return
 	}
 
 	res := redisClient.HExists(ctx, key, field)
+
 	err = res.Err()
 
 	if err != nil {
