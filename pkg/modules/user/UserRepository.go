@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/laxeder/go-shop-service/pkg/modules/account"
-	"github.com/laxeder/go-shop-service/pkg/modules/address"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
 	"github.com/laxeder/go-shop-service/pkg/modules/str"
@@ -59,12 +57,6 @@ func (u *User) Save(user *User) (err error) {
 		return err
 	}
 
-	user.ApplyAccountsUid()
-	user.ApplyAdressesUid()
-
-	accounts := MarshalBinary(user.AccountsUid)
-	adresses := MarshalBinary(user.AdressesUid)
-
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -78,8 +70,6 @@ func (u *User) Save(user *User) (err error) {
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
 		rdb.HSet(ctx, key, "status", string(user.Status))
-		rdb.HSet(ctx, key, "adresses_uid", adresses)
-		rdb.HSet(ctx, key, "accounts_uid", accounts)
 		rdb.HSet(ctx, key, "created_at", user.CreatedAt)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
@@ -108,12 +98,6 @@ func (u *User) Update(user *User) (err error) {
 		return err
 	}
 
-	user.ApplyAccountsUid()
-	user.ApplyAdressesUid()
-
-	accounts := MarshalBinary(user.AccountsUid)
-	adresses := MarshalBinary(user.AdressesUid)
-
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -122,8 +106,6 @@ func (u *User) Update(user *User) (err error) {
 		rdb.HSet(ctx, key, "last_name", user.LastName)
 		rdb.HSet(ctx, key, "email", user.Email)
 		rdb.HSet(ctx, key, "telephone", user.Telephone)
-		rdb.HSet(ctx, key, "adresses_uid", adresses)
-		rdb.HSet(ctx, key, "accounts_uid", accounts)
 		rdb.HSet(ctx, key, "updated_at", user.UpdatedAt)
 		return nil
 	})
@@ -417,50 +399,6 @@ func (u *User) GetByUuid(uuid string) (user *User, err error) {
 		user = &User{Status: Disabled}
 		return user, nil
 	}
-
-	//? Convertendo bytes
-	user.AccountsUid = UnmarshalBinary([]byte(res.Val()["accounts_uid"]))
-	user.AdressesUid = UnmarshalBinary([]byte(res.Val()["adresses_uid"]))
-
-	user.ForEachAccountsUid(func(uid string) {
-		accountDatabase, err := account.Repository().GetByUid(uid)
-
-		if err != nil {
-			log.Error().Err(err).Msgf("Erro ao buscar conta (%v) do usuário. %v", uid)
-			return
-		}
-
-		if accountDatabase.Uid == "" {
-			log.Error().Msgf("Conta (%v) não existe. %v", uid)
-			return
-		}
-
-		if accountDatabase.Status == account.Disabled {
-			accountDatabase = &account.Account{Status: account.Disabled}
-		}
-
-		user.Accounts = append(user.Accounts, *accountDatabase)
-	})
-
-	user.ForEachAdressesUid(func(uid string) {
-		addressDatabase, err := address.Repository().GetByUid(uid)
-
-		if err != nil {
-			log.Error().Err(err).Msgf("Erro ao buscar endereço (%v) do usuário. %v", uid)
-			return
-		}
-
-		if addressDatabase.Uid == "" {
-			log.Error().Msgf("Endereço (%v) não encontrado. %v", uid, err)
-			return
-		}
-
-		if addressDatabase.Status == address.Disabled {
-			addressDatabase = &address.Address{Status: address.Disabled}
-		}
-
-		user.Adresses = append(user.Adresses, *addressDatabase)
-	})
 
 	// ? esses campos não podem ficar expostos
 	user.Password = ""
