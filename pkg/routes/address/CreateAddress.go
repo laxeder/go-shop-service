@@ -61,7 +61,6 @@ func CreateAddress(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS027"))
 	}
 
-	userDatabase.Adresses = append(userDatabase.Adresses, *addressBody)
 	userDatabase.UpdatedAt = date.NowUTC()
 
 	err = user.Repository().Update(userDatabase)
