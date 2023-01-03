@@ -28,7 +28,7 @@ func RestoreAccount(ctx *fiber.Ctx) error {
 	}
 
 	// muda o status do conta para ativo
-	accountDatabase.Uid = uid
+	accountDatabase.Uuid = uid
 	accountDatabase.Status = account.Enabled
 	accountDatabase.UpdatedAt = date.NowUTC()
 

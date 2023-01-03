@@ -26,7 +26,7 @@ func DeleteAccount(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.Error(400, "GSS012", "Esta conta já está desativado no sistema."))
 	}
 
-	accountDatabase.Uid = uid
+	accountDatabase.Uuid = uid
 	accountDatabase.Status = account.Disabled
 	accountDatabase.UpdatedAt = date.NowUTC()
 

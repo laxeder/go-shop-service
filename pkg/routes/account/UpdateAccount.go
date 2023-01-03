@@ -33,7 +33,7 @@ func UpdateAccount(ctx *fiber.Ctx) error {
 
 	accountDatabase, err := account.Repository().GetByUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Uid)
+		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS020", "Erro ao tentar validar usuário."))
 	}
 

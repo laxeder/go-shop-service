@@ -29,11 +29,10 @@ func (a *Account) Save(account *Account) (err error) {
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", account.Uid)
+	key := fmt.Sprintf("accounts:%v", account.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "uuid", account.Uuid)
-		rdb.HSet(ctx, key, "uid", account.Uid)
 		rdb.HSet(ctx, key, "nickname", account.Nickname)
 		rdb.HSet(ctx, key, "profession", account.Profession)
 		rdb.HSet(ctx, key, "rg", account.RG)
@@ -46,7 +45,7 @@ func (a *Account) Save(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível inserir uma conta com o uid no redis. (%v)", account.Uid)
+		log.Error().Err(err).Msgf("Não foi possível inserir uma conta com o uid no redis. (%v)", account.Uuid)
 		return
 	}
 
@@ -65,7 +64,7 @@ func (a *Account) Update(account *Account) (err error) {
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", account.Uid)
+	key := fmt.Sprintf("accounts:%v", account.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "nickname", account.Nickname)
@@ -78,7 +77,7 @@ func (a *Account) Update(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar a conta no redis. (%v)", account.Uid)
+		log.Error().Err(err).Msgf("Não foi possível atualizar a conta no redis. (%v)", account.Uuid)
 		return
 	}
 
@@ -173,7 +172,7 @@ func (a *Account) SaveOptins(account *Account) (err error) {
 		return
 	}
 
-	key := fmt.Sprintf("accounts:%v", account.Uid)
+	key := fmt.Sprintf("accounts:%v", account.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "optins_cdu", account.Options)
@@ -182,7 +181,7 @@ func (a *Account) SaveOptins(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar o optins no redis. (%v)", account.Uid)
+		log.Error().Err(err).Msgf("Não foi possível atualizar o optins no redis. (%v)", account.Uuid)
 		return
 	}
 
@@ -205,7 +204,7 @@ func (u *Account) Delete(account *Account) (err error) {
 
 	account.Status = Disabled
 
-	key := fmt.Sprintf("accounts:%v", account.Uid)
+	key := fmt.Sprintf("accounts:%v", account.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(account.Status))
 		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
@@ -213,7 +212,7 @@ func (u *Account) Delete(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível deletar o conta com uid %v no redis.", account.Uid)
+		log.Error().Err(err).Msgf("Não foi possível deletar o conta com uid %v no redis.", account.Uuid)
 		return err
 	}
 
@@ -236,7 +235,7 @@ func (u *Account) Restore(account *Account) (err error) {
 
 	account.Status = Enabled
 
-	key := fmt.Sprintf("accounts:%v", account.Uid)
+	key := fmt.Sprintf("accounts:%v", account.Uuid)
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, "status", string(account.Status))
 		rdb.HSet(ctx, key, "updated_at", account.UpdatedAt)
@@ -244,7 +243,7 @@ func (u *Account) Restore(account *Account) (err error) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível restaurar a conta com uid %v no redis.", account.Uid)
+		log.Error().Err(err).Msgf("Não foi possível restaurar a conta com uid %v no redis.", account.Uuid)
 		return err
 	}
 
