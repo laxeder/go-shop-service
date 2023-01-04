@@ -1,69 +1,55 @@
 package routes
 
 import (
-	"encoding/json"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 func UpdateUserPassword(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
 	body := ctx.Body()
-	uuid := ctx.Params("uuid")
+	userBody := &user.UserPassword{}
 
-	// iniicia a struct do usuário com password
-	userPassowrd := &user.UserPassword{}
+	err := utils.InjectBytes(body, userBody)
 
-	// converte o json para struct
-	err := json.Unmarshal(body, userPassowrd)
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uuid)
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body no user. %s", body)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS136", "O formado dos dados envidados está incorreto."))
 	}
 
-	// monta a struct de usuário
-	userBody := &user.User{Password: userPassowrd.NewPassword, ConfirmPassword: userPassowrd.NewConfirmPassword}
-
-	// compara o password
-	if userPassowrd.Password == userPassowrd.NewPassword {
-		log.Error().Msgf("A nova senha não pode ser idêntica a senha atual.(%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS137", "A nova senha não pode ser idêntica a senha atual."))
+	if userBody.NewPassword != userBody.ConfirmPassword {
+		return response.Ctx(ctx).Result(response.Error(400, "GSS191", "A confirmação de senha está incorreta."))
 	}
 
-	// valida o password
-	checkPassword := userBody.PasswordValid()
-	if checkPassword.Status != 200 {
-		return response.Ctx(ctx).Result(checkPassword)
-	}
+	userData, err := user.Repository().GetPassword(userBody.Uuid)
 
-	// valida a confirmação
-	checkConfirmPassword := userBody.ConfirmPasswordValid()
-	if checkConfirmPassword.Status != 200 {
-		return response.Ctx(ctx).Result(checkConfirmPassword)
-	}
-
-	userDatabase, err := user.Repository().GetByUuid(uuid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS138"))
+		log.Error().Err(err).Msgf("Erro ao tentar obter usuário  (%v).", userBody.Uuid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS137"))
 	}
 
-	// injeta os novos valores no lugar dos dados recuperados da base de dados
-	userDatabase.Inject(userBody)
-	// userDatabase.NewSalt()
-	// userDatabase.NewHashPassword()
-	userDatabase.UpdatedAt = date.NowUTC()
+	if userData == nil {
+		log.Error().Err(err).Msgf("Usuário não encontrado (%v).", userBody.Uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS138", "Esse usuário não foi encontrado na base de dados."))
+	}
 
-	// guarda a alterações na base de dados do usuário
-	err = user.Repository().SavePassowrd(userDatabase)
+	hashPassword := utils.NewHashPassword(userData.Salt, userBody.OldPassword)
+
+	if userData.Password != hashPassword {
+		return response.Ctx(ctx).Result(response.Error(400, "GSS139", "A senha antiga está incorreta."))
+	}
+
+	userData.Password = userBody.NewPassword
+
+	err = user.Repository().SavePassword(userData)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar atualizar o repositório do usuário %v", uuid)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS139"))
+		log.Error().Err(err).Msgf("Erro ao tentar atualizar a senha do usuário %v", userBody)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS192"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))
