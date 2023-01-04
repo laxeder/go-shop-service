@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -58,8 +57,6 @@ func (s *ShopCart) Save(shopcart *ShopCart) (err error) {
 	}
 
 	shopcart.ProductsResume = shopcart.ReduceProducts(shopcart.Products)
-
-	spew.Dump((shopcart.ProductsResume))
 
 	key := fmt.Sprintf("shopcarts:%v", uuid)
 

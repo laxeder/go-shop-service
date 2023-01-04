@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -17,7 +15,7 @@ func RestoreShopCart(ctx *fiber.Ctx) error {
 	uuid := ctx.Params("uuid")
 
 	shopcartDatabase, err := shopcart.Repository().GetUuid(uuid)
-	fmt.Print(shopcartDatabase)
+
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar validar shopcart. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS104"))

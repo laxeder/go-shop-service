@@ -2,7 +2,6 @@ package product
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
@@ -21,8 +20,6 @@ func UnmarshalProductsResume(productResByte ...[]byte) (productResume *[]Product
 
 	productResume = &[]ProductResume{}
 	err = nil
-
-	fmt.Print(len(productResByte))
 
 	if len(productResByte) <= 0 {
 		return
