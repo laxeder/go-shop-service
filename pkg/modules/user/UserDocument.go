@@ -1,31 +1,14 @@
 package user
 
-import (
-	"encoding/json"
-
-	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-)
+import "github.com/laxeder/go-shop-service/pkg/modules/str"
 
 type UserDocument struct {
-	Document    string `json:"document,omitempty" redis:"document,omitempty"`
-	OldDocument string `json:"old_document,omitempty" redis:"old_document,omitempty"`
+	Uuid        string `json:"uuid,omitempty"`
+	OldDocument string `json:"old_document,omitempty"`
+	NewDocument string `json:"new_document,omitempty"`
 }
 
-func NewUserDocument(userDocumentByte ...[]byte) (userDocument *UserDocument, err error) {
-	var log = logger.New()
-
-	userDocument = &UserDocument{}
-	err = nil
-
-	if len(userDocumentByte) == 0 {
-		return userDocument, err
-	}
-
-	err = json.Unmarshal(userDocumentByte[0], userDocument)
-	if err != nil {
-		log.Error().Err(err).Msgf("O json do usuário está incorreto. %v", userDocumentByte[0])
-		return userDocument, err
-	}
-
-	return userDocument, err
+func (u *UserDocument) GenerateDocument() {
+	u.OldDocument = str.DocumentPad(u.OldDocument)
+	u.NewDocument = str.DocumentPad(u.NewDocument)
 }
