@@ -2,57 +2,42 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
-// cria um novo usuário na base de ddaos
 func CreateUser(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
 	body := ctx.Body()
+	userBody := &user.User{}
 
-	// transforma o json em Struct
-	userBody, err := user.New(body)
+	err := utils.InjectBytes(body, userBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos ou json está mal formatado. %s", userBody)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS111", "Os campos enviados estão incorretos ou json está mal formatado."))
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body no user. %s", body)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS111", "O formado dos dados envidados está incorreto."))
 	}
 
-	userDatabase, err := user.Repository().GetUuid(userBody.Uuid)
+	userData, err := user.Repository().GetByEmail(userBody.Email)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos (%v). %v", userBody.Document, err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter usuário pelo email (%v).", userBody.Email)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS112"))
 	}
 
-	// verifica se a conta está desabilitada
-	if userDatabase.Status == user.Disabled {
-		log.Error().Msgf("Esta conta (%v) está desabilitada por tempo indeterminado.", userBody.Document)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS113", "Esta conta está desabilitada por tempo indeterminado."))
+	if userData != nil {
+		log.Error().Msgf("Email já está registrado (%v).", userBody.Email)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS182", "Esse email já está registrado na base de dados."))
 	}
 
-	// verifica se o documento existe
-	if len(userDatabase.Document) > 0 {
-		log.Error().Msgf("Este documento (%v) já existe na nossa base de dados.", userBody.Document)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS114", "Este documento já existe na nossa base de dados."))
-	}
-
-	// userBody.NewUuid()
-	// userBody.NewSalt()
-	// userBody.NewHashPassword()
-	userBody.SetFullname()
-
-	userBody.Status = user.Enabled
-	userBody.CreatedAt = date.NowUTC()
-	userBody.UpdatedAt = date.NowUTC()
-
-	// armazena o usuário na base de dados
 	err = user.Repository().Save(userBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", userBody.Document)
+		log.Error().Err(err).Msgf("Erro ao tentar salvar usuário %v", userBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS115"))
 	}
 

@@ -24,19 +24,19 @@ func ApiV1(app *fiber.App) {
 
 	//? ****************************** Rotas do usuário ******************************
 
-	route.Put("/user/password/:uuid", mid.JWT, usr.UpdateUserPassword)
-	route.Put("/user/document/:uuid", mid.JWT, usr.UpdateUserDocument)
+	route.Put("/user/password", mid.JWT, usr.UpdateUserPassword)
+	route.Put("/user/document", mid.JWT, usr.UpdateUserDocument)
 	route.Post("/user/login", usr.LoginUser)
 	route.Patch("/user/:uuid", mid.JWT, usr.RestoreUser)
 	route.Delete("/user/:uuid", mid.JWT, usr.DeleteUser)
 	route.Put("/user/:uuid", mid.JWT, usr.UpdateUser)
 	route.Get("/user/:uuid", mid.JWT, usr.ShowUser)
-	route.Post("/user", usr.CreateUser)
 	route.Get("/users", mid.JWT, usr.ListUsers)
-	route.Patch("/address/:uid", mid.JWT, addr.RestoreAddress)
+	route.Post("/user", usr.CreateUser)
 
 	//? ****************************** Rotas do endereço *****************************
 
+	route.Patch("/address/:uid", mid.JWT, addr.RestoreAddress)
 	route.Delete("/address/:uid", mid.JWT, addr.DeleteAddress)
 	route.Put("/address/:uid", mid.JWT, addr.UpdateAddress)
 	route.Get("/address/:uid", mid.JWT, addr.ShowAddress)

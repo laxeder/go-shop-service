@@ -6,7 +6,6 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
-	"github.com/laxeder/go-shop-service/pkg/modules/user"
 )
 
 // cria um novo endereço na base de ddaos
@@ -52,21 +51,6 @@ func CreateAddress(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do endereço %v", addressBody.Uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS026"))
-	}
-
-	// carrega o usuário da base de dados para atualizar as contas
-	userDatabase, err := user.Repository().GetByUuid(addressBody.Uuid)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário (%v), (%v).", addressBody.Uid, err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS027"))
-	}
-
-	userDatabase.UpdatedAt = date.NowUTC()
-
-	err = user.Repository().Update(userDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar atualizar os endereços do usuário (%v), (%v).", addressBody.Uid, err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS028"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))

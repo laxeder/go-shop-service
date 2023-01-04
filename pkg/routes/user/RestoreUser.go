@@ -1,45 +1,41 @@
 package routes
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
-// restaura uma conta de usuário com status deletado
 func RestoreUser(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
 	uuid := ctx.Params("uuid")
 
-	userDatabase, err := user.Repository().GetUuid(uuid)
-	fmt.Print(userDatabase)
+	userInfo, err := user.Repository().GetDataInfo(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário. (%v)", uuid)
+		log.Error().Err(err).Msgf("Erro ao tentar obter usuário (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS124"))
 	}
 
-	// verifica o status do usuário
-	if userDatabase.Status != user.Disabled {
-		log.Error().Msgf("Este usuário já está ativo no sistema. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS125", "Este usuário já está ativo no sistema."))
+	if userInfo == nil {
+		log.Error().Msgf("Usuário não encontrado (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS184", "Esse usuário não foi encontrado na base de dados."))
 	}
 
-	// muda o status do usuário para ativo
-	userDatabase.Uuid = uuid
-	userDatabase.Status = user.Enabled
-	userDatabase.UpdatedAt = date.NowUTC()
+	if userInfo.Status != status.Disabled {
+		log.Error().Msgf("Usuário já está ativado (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS125", "Este usuário já está ativado no sistema."))
+	}
 
-	// salva as alterações na base de dados
-	err = user.Repository().Restore(userDatabase)
+	err = user.Repository().Restore(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS126", "O formado dos dados envidados está incorreto."))
+		log.Error().Err(err).Msgf("Erro ao tentar restaurar usuário (%v).", uuid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS126"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

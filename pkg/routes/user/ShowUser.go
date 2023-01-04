@@ -7,18 +7,23 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
 )
 
-// mostra os dados de uma usu'ario
 func ShowUser(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
 	uuid := ctx.Params("uuid")
 
-	userDatabase, err := user.Repository().GetByUuid(uuid)
+	userData, err := user.Repository().Get(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter usuário (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS127"))
 	}
 
-	return response.Ctx(ctx).Result(response.Success(200, userDatabase))
+	if userData == nil {
+		log.Error().Msgf("Usuário não encontrado (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS186", "Esse usuário não foi encontrado na base de dados."))
+	}
+
+	return response.Ctx(ctx).Result(response.Success(200, userData))
 
 }

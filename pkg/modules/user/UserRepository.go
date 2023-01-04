@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
 	"github.com/laxeder/go-shop-service/pkg/shared/status"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 var redisClient *redis.Client
@@ -16,15 +17,26 @@ func Repository() *User {
 	return &User{}
 }
 
+func (u *User) Exists(uuid string, ignoreStatus bool) (bool, error) {
+
+	userData, err := redisdb.GetDataInfo(redisdb.UserDatabase, fmt.Sprintf("users:%v", uuid))
+
+	if err != nil {
+		return false, err
+	}
+
+	if userData == nil {
+		return false, nil
+	}
+
+	if !ignoreStatus && userData.Status != status.Enabled {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (u *User) Save(user *User) (err error) {
-
-	ctx := context.Background()
-	err = nil
-
-	user.GenerateUuid()
-	user.GenerateFullName()
-	user.GenerateDocument()
-	user.GeneratePassword()
 
 	redisClient, err = redisdb.New(redisdb.UserDatabase)
 
@@ -32,9 +44,17 @@ func (u *User) Save(user *User) (err error) {
 		return
 	}
 
+	ctx := context.Background()
+
+	user.GenerateUuid()
+	user.GenerateFullName()
+	user.GenerateDocument()
+	user.GeneratePassword()
+
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
 		rdb.HSet(ctx, key, "uuid", user.Uuid)
 		rdb.HSet(ctx, key, "full_name", user.Fullname)
 		rdb.HSet(ctx, key, "first_name", user.FirstName)
@@ -45,7 +65,7 @@ func (u *User) Save(user *User) (err error) {
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
 
-		redisdb.CreateItemInfo(rdb, ctx, key)
+		redisdb.CreateDataInfo(rdb, ctx, key)
 
 		return
 	})
@@ -57,12 +77,17 @@ func (u *User) Save(user *User) (err error) {
 	return
 }
 
-func (u *User) Update(user *User) (err error) {
+func (u *User) SavePassword(user *User) (err error) {
 
-	ctx := context.Background()
-	err = nil
+	exists, err := u.Exists(user.Uuid, false)
 
-	user.GenerateFullName()
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("User does not exist")
+	}
 
 	redisClient, err = redisdb.New(redisdb.UserDatabase)
 
@@ -70,99 +95,18 @@ func (u *User) Update(user *User) (err error) {
 		return
 	}
 
-	key := fmt.Sprintf("users:%v", user.Uuid)
-
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
-		rdb.HSet(ctx, key, "full_name", user.Fullname)
-		rdb.HSet(ctx, key, "first_name", user.FirstName)
-		rdb.HSet(ctx, key, "last_name", user.LastName)
-		rdb.HSet(ctx, key, "email", user.Email)
-		rdb.HSet(ctx, key, "telephone", user.Telephone)
-
-		redisdb.UpdateItemInfo(rdb, ctx, key)
-
-		return
-	})
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (u *User) Delete(user *User) (err error) {
-
 	ctx := context.Background()
-	err = nil
-
-	redisClient, err = redisdb.New(redisdb.UserDatabase)
-
-	if err != nil {
-		return
-	}
-
-	key := fmt.Sprintf("users:%v", user.Uuid)
-
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
-		redisdb.UpdateItemStatus(rdb, ctx, key, status.Disabled)
-
-		return
-	})
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (u *User) Restore(user *User) (err error) {
-
-	ctx := context.Background()
-	err = nil
-
-	redisClient, err = redisdb.New(redisdb.UserDatabase)
-
-	if err != nil {
-		return
-	}
-
-	key := fmt.Sprintf("users:%v", user.Uuid)
-
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
-		redisdb.UpdateItemStatus(rdb, ctx, key, status.Enabled)
-
-		return
-	})
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (u *User) SavePassowrd(user *User) (err error) {
-
-	ctx := context.Background()
-	err = nil
 
 	user.GeneratePassword()
 
-	redisClient, err = redisdb.New(redisdb.UserDatabase)
-
-	if err != nil {
-		return
-	}
-
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
 		rdb.HSet(ctx, key, "password", user.Password)
 		rdb.HSet(ctx, key, "salt", user.Salt)
 
-		redisdb.UpdateItemInfo(rdb, ctx, key)
+		redisdb.UpdateDataInfo(rdb, ctx, key)
 
 		return
 	})
@@ -176,10 +120,15 @@ func (u *User) SavePassowrd(user *User) (err error) {
 
 func (u *User) SaveDocument(user *User) (err error) {
 
-	ctx := context.Background()
-	err = nil
+	exists, err := u.Exists(user.Uuid, false)
 
-	user.GenerateDocument()
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("User does not exist")
+	}
 
 	redisClient, err = redisdb.New(redisdb.UserDatabase)
 
@@ -187,12 +136,17 @@ func (u *User) SaveDocument(user *User) (err error) {
 		return
 	}
 
+	ctx := context.Background()
+
+	user.GenerateDocument()
+
 	key := fmt.Sprintf("users:%v", user.Uuid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
 		rdb.HSet(ctx, key, "document", user.Document)
 
-		redisdb.UpdateItemInfo(rdb, ctx, key)
+		redisdb.UpdateDataInfo(rdb, ctx, key)
 
 		return err
 	})
@@ -204,53 +158,45 @@ func (u *User) SaveDocument(user *User) (err error) {
 	return
 }
 
-func (u *User) GetPassword(uuid string) (user *User, err error) {
+func (u *User) Update(user *User) (err error) {
+
+	exists, err := u.Exists(user.Uuid, false)
+
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("User does not exist")
+	}
+
+	redisClient, err = redisdb.New(redisdb.UserDatabase)
+
+	if err != nil {
+		return
+	}
 
 	ctx := context.Background()
-	user = &User{}
-	err = nil
 
-	redisClient, err := redisdb.New(redisdb.UserDatabase)
+	user.GenerateFullName()
+
+	key := fmt.Sprintf("users:%v", user.Uuid)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		rdb.HSet(ctx, key, "full_name", user.Fullname)
+		rdb.HSet(ctx, key, "first_name", user.FirstName)
+		rdb.HSet(ctx, key, "last_name", user.LastName)
+		rdb.HSet(ctx, key, "email", user.Email)
+		rdb.HSet(ctx, key, "telephone", user.Telephone)
+
+		redisdb.UpdateDataInfo(rdb, ctx, key)
+
+		return
+	})
 
 	if err != nil {
 		return
-	}
-
-	key := fmt.Sprintf("users:%v", uuid)
-
-	res := redisClient.HMGet(ctx, key, "uuid", "password", "salt")
-
-	err = res.Err()
-
-	if err != nil {
-		return
-	}
-
-	err = res.Scan(user)
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func (u *User) GetByEmail(email string) (user *User, err error) {
-
-	user = nil
-	err = nil
-
-	users, er := u.GetList()
-
-	if er != nil {
-		return user, er
-	}
-
-	for _, usr := range users {
-		if usr.Email == email {
-			user = &usr
-			break
-		}
 	}
 
 	return
@@ -258,16 +204,14 @@ func (u *User) GetByEmail(email string) (user *User, err error) {
 
 func (u *User) Get(uuid string) (user *User, err error) {
 
-	user = nil
-	err = nil
-
-	ctx := context.Background()
-
 	redisClient, err := redisdb.New(redisdb.UserDatabase)
 
 	if err != nil {
 		return
 	}
+
+	ctx := context.Background()
+	user = &User{}
 
 	key := fmt.Sprintf("users:%v", uuid)
 
@@ -285,36 +229,101 @@ func (u *User) Get(uuid string) (user *User, err error) {
 		return
 	}
 
-	userInfo := &redisdb.ItemInfo{}
-
-	err = res.Scan(userInfo)
+	err = utils.InjectMap(res.Val(), user)
 
 	if err != nil {
 		return
 	}
 
-	if userInfo.Status == status.Disabled {
+	if user.Status != status.Enabled {
 		return nil, nil
 	}
 
 	//? esses campos não podem ficar expostos
 	user.Password = ""
-	user.ConfirmPassword = ""
 	user.Salt = ""
 
 	return
 }
 
-func (u *User) GetList() (users []User, err error) {
+func (u *User) GetDataInfo(uuid string) (dataInfo *redisdb.DataInfo, err error) {
 
-	ctx := context.Background()
-	err = nil
+	dataInfo, err = redisdb.GetDataInfo(redisdb.UserDatabase, fmt.Sprintf("users:%v", uuid))
+
+	if err != nil || dataInfo == nil {
+		return
+	}
+
+	return
+}
+
+func (u *User) GetPassword(uuid string) (user *User, err error) {
 
 	redisClient, err := redisdb.New(redisdb.UserDatabase)
 
 	if err != nil {
 		return
 	}
+
+	ctx := context.Background()
+	user = &User{}
+
+	key := fmt.Sprintf("users:%v", uuid)
+
+	res := redisClient.HGetAll(ctx, key)
+
+	err = res.Err()
+
+	if err != nil {
+		return
+	}
+
+	err = res.Scan(user)
+
+	if err != nil {
+		return
+	}
+
+	err = utils.InjectMap(res.Val(), user)
+
+	if err != nil {
+		return
+	}
+
+	if user.Status != status.Enabled {
+		return nil, nil
+	}
+
+	return
+}
+
+func (u *User) GetByEmail(email string) (user *User, err error) {
+
+	users, err := u.GetList()
+
+	if err != nil {
+		return
+	}
+
+	for _, usr := range users {
+		if usr.Email == email {
+			user = &usr
+			break
+		}
+	}
+
+	return
+}
+
+func (u *User) GetList() (users []User, err error) {
+
+	redisClient, err := redisdb.New(redisdb.UserDatabase)
+
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
 
 	iter := redisClient.Scan(ctx, 0, "users:*", 0).Iterator()
 
@@ -336,6 +345,74 @@ func (u *User) GetList() (users []User, err error) {
 		}
 
 		users = append(users, *user)
+	}
+
+	return
+}
+
+func (u *User) Delete(uuid string) (err error) {
+
+	exists, err := u.Exists(uuid, true)
+
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("User does not exist")
+	}
+
+	redisClient, err = redisdb.New(redisdb.UserDatabase)
+
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	key := fmt.Sprintf("users:%v", uuid)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		redisdb.UpdateDataStatus(rdb, ctx, key, status.Disabled)
+
+		return
+	})
+
+	return
+}
+
+func (u *User) Restore(uuid string) (err error) {
+
+	exists, err := u.Exists(uuid, true)
+
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("User does not exist")
+	}
+
+	redisClient, err = redisdb.New(redisdb.UserDatabase)
+
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	key := fmt.Sprintf("users:%v", uuid)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		redisdb.UpdateDataStatus(rdb, ctx, key, status.Enabled)
+
+		return
+	})
+
+	if err != nil {
+		return
 	}
 
 	return

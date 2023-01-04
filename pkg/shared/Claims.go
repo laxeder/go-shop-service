@@ -5,6 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	j "github.com/laxeder/go-shop-service/pkg/modules/jwt"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 func Claims(ctx *fiber.Ctx) *j.Claims {
@@ -15,11 +16,13 @@ func Claims(ctx *fiber.Ctx) *j.Claims {
 	return cl.InjectMap(claims)
 }
 
-func UserClaims(ctx *fiber.Ctx) *user.User {
+func UserClaims(ctx *fiber.Ctx) (u *user.User, err error) {
+
+	u = &user.User{}
 
 	claims := Claims(ctx)
 
-	u := &user.User{}
+	err = utils.InjectMap(claims.Data.(fiber.Map), u)
 
-	return u.InjectMap(claims.Data)
+	return
 }

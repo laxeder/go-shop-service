@@ -40,15 +40,13 @@ func Health() (string, error) {
 
 func Exists(database Nodedatabase, key string, field string) (exists bool, err error) {
 
-	ctx := context.Background()
-	exists = false
-	err = nil
-
 	redisClient, err := New(database)
 
 	if err != nil {
 		return
 	}
+
+	ctx := context.Background()
 
 	res := redisClient.HExists(ctx, key, field)
 

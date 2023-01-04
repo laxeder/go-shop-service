@@ -1,17 +1,14 @@
-package shared
+package utils
 
 import (
 	"encoding/json"
 	"fmt"
 
 	"github.com/fatih/structs"
-	"github.com/gofiber/fiber/v2"
 	"github.com/mitchellh/mapstructure"
 )
 
 func Inject(input interface{}, output interface{}) (err error) {
-
-	err = nil
 
 	iMap := structs.Map(input)
 	oMap := structs.Map(output)
@@ -38,9 +35,7 @@ func Inject(input interface{}, output interface{}) (err error) {
 	return
 }
 
-func InjectMap(input fiber.Map, output interface{}) (err error) {
-
-	err = nil
+func InjectMap(input any, output interface{}) (err error) {
 
 	data, err := json.Marshal(input)
 	if err != nil {
@@ -56,9 +51,7 @@ func InjectMap(input fiber.Map, output interface{}) (err error) {
 	return
 }
 
-func InjectByte(data []byte, output interface{}) (err error) {
-
-	err = nil
+func InjectBytes(data []byte, output interface{}) (err error) {
 
 	if len(data) == 0 {
 		return

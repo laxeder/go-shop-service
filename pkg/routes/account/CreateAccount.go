@@ -6,7 +6,6 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
-	"github.com/laxeder/go-shop-service/pkg/modules/user"
 )
 
 // cria uma nova conta com base num usuário
@@ -70,21 +69,6 @@ func CreateAccount(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", accountBody.Uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS008"))
-	}
-
-	// carrega o usuário da base de dados para atualizar as contas
-	userDatabase, err := user.Repository().GetByUuid(accountBody.Uuid)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário (%v), (%v).", accountBody.Uuid, err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS009"))
-	}
-
-	userDatabase.UpdatedAt = date.NowUTC()
-
-	err = user.Repository().Update(userDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar atualizar contas do usuário (%v), (%v).", accountBody.Uuid, err)
-		return response.Ctx(ctx).Result(response.ErrorDefault("GSS010"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(201))
