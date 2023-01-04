@@ -6,61 +6,63 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/shared/status"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
-type ItemInfo struct {
+type DataInfo struct {
+	Id        string        `json:"id,omitempty" redis:"id,omitempty"`
 	Status    status.Status `json:"status,omitempty" redis:"status,omitempty"`
 	CreatedAt string        `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt string        `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
-func CreateItemInfo(rdb redis.Pipeliner, ctx context.Context, key string) {
-	rdb.HSet(ctx, key, "status", status.Enabled)
+func CreateDataInfo(rdb redis.Pipeliner, ctx context.Context, key string) {
+	rdb.HSet(ctx, key, "id", utils.Nonce())
+	rdb.HSet(ctx, key, "status", string(status.Enabled))
 	rdb.HSet(ctx, key, "created_at", date.NowUTC())
 	rdb.HSet(ctx, key, "updated_at", date.NowUTC())
 }
 
-func UpdateItemInfo(rdb redis.Pipeliner, ctx context.Context, key string) {
+func UpdateDataInfo(rdb redis.Pipeliner, ctx context.Context, key string) {
 	rdb.HSet(ctx, key, "updated_at", date.NowUTC())
 }
 
-func UpdateItemStatus(rdb redis.Pipeliner, ctx context.Context, key string, status status.Status) {
+func UpdateDataStatus(rdb redis.Pipeliner, ctx context.Context, key string, status status.Status) {
 	rdb.HSet(ctx, key, "status", string(status))
 	rdb.HSet(ctx, key, "updated_at", date.NowUTC())
 }
 
-func GetItemInfo(database Nodedatabase, key string) (itemInfo *ItemInfo, err error) {
+func GetDataInfo(database Nodedatabase, key string) (dataInfo *DataInfo, err error) {
 
 	ctx := context.Background()
-	itemInfo = &ItemInfo{}
-	err = nil
+	dataInfo = &DataInfo{}
 
 	redisClient, err := New(database)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	res := redisClient.HMGet(ctx, key, "status", "created_at", "updated_at")
+	res := redisClient.HMGet(ctx, key, "id", "status", "created_at", "updated_at")
 
 	err = res.Err()
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if len(res.Val()) == 0 {
-		return
+		return nil, nil
 	}
 
-	err = res.Scan(itemInfo)
+	err = res.Scan(dataInfo)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	if itemInfo.Status == "" {
-		itemInfo.Status = status.Disabled
+	if dataInfo.Id == "" {
+		return nil, nil
 	}
 
 	return

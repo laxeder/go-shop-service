@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
 	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
 )
@@ -19,6 +20,7 @@ type User struct {
 	Password        string `json:"password,omitempty" redis:"password,omitempty"`
 	ConfirmPassword string `json:"confirm_password,omitempty" redis:"-,omitempty"`
 	Salt            string `json:"salt,omitempty" redis:"salt,omitempty"`
+	redisdb.DataInfo
 }
 
 func (u *User) GenerateUuid() {
