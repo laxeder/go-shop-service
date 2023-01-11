@@ -201,14 +201,14 @@ func (p *Product) GetByUid(uid string) (product *Product, err error) {
 	product.CategoryCodes = UnmarshalBinary([]byte(res.Val()["category_codes"]))
 
 	product.ForEachCategoryCodes(func(code string) {
-		categoryDatabase, err := category.Repository().GetByCode(code)
+		categoryData, err := category.Repository().Get(code)
 
 		if err != nil {
 			log.Error().Err(err).Msgf("Erro ao buscar categoria do produto. %v", err)
 			return
 		}
 
-		if categoryDatabase.Code == "" {
+		if categoryData.Code == "" {
 			log.Error().Err(err).Msgf("Categoria (%v) não existe. %v", code, err)
 			return
 		}
@@ -217,7 +217,7 @@ func (p *Product) GetByUid(uid string) (product *Product, err error) {
 			product = &Product{Status: Disabled}
 		}
 
-		product.Categories = append(product.Categories, *categoryDatabase)
+		product.Categories = append(product.Categories, *categoryData)
 	})
 
 	if product.Status == Disabled {
