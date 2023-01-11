@@ -3,9 +3,9 @@ package shared
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	j "github.com/laxeder/go-shop-service/pkg/modules/jwt"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
 	"github.com/laxeder/go-shop-service/pkg/utils"
+	j "github.com/laxeder/go-shop-service/pkg/utils/jwt"
 )
 
 func Claims(ctx *fiber.Ctx) *j.Claims {

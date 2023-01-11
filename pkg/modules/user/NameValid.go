@@ -1,9 +1,9 @@
-package shared
+package user
 
 import (
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/regex"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils/regex"
 )
 
 func NameValid(name string) *response.Result {

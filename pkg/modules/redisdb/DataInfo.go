@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/shared/status"
+	"github.com/laxeder/go-shop-service/pkg/utils/date"
 )
 
 type DataInfo struct {

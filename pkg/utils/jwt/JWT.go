@@ -3,10 +3,11 @@ package jwt
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
+
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/date"
+	"github.com/laxeder/go-shop-service/pkg/utils/str"
 )
 
 type JWT struct {

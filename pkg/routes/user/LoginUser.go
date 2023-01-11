@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/jwt"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/user"
 	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/jwt"
 )
 
 func LoginUser(ctx *fiber.Ctx) error {

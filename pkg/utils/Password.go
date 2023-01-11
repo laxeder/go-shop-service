@@ -4,11 +4,12 @@ import (
 	"crypto/sha512"
 	"fmt"
 
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/utils/str"
+	"github.com/laxeder/go-shop-service/pkg/utils/tokens"
 )
 
 func NewSalt() string {
-	return Nonce()
+	return tokens.Nonce()
 }
 
 func NewHashPassword(salt string, password string) (hash string) {

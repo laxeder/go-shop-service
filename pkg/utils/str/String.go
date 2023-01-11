@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/laxeder/go-shop-service/pkg/modules/regex"
+	"github.com/laxeder/go-shop-service/pkg/utils/regex"
 )
 
 func String(str any) string {

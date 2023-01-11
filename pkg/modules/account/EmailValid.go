@@ -1,9 +1,9 @@
-package shared
+package account
 
 import (
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/regex"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils/regex"
 )
 
 func EmailValid(email string) *response.Result {

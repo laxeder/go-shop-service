@@ -2,7 +2,7 @@ package address
 
 import (
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/tokens"
 )
 
 type Address struct {
@@ -18,5 +18,5 @@ type Address struct {
 }
 
 func (a *Address) GenerateUid() {
-	a.Uid = utils.Nonce()
+	a.Uid = tokens.Nonce()
 }

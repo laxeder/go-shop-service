@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/utils/str"
 )
 
 type Category struct {

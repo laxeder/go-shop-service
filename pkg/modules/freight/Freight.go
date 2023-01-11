@@ -3,7 +3,7 @@ package freight
 import (
 	"encoding/json"
 
-	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/tokens"
 	"github.com/rs/zerolog/log"
 )
 
@@ -46,7 +46,7 @@ func (f *Freight) Calc() int {
 }
 
 func (f *Freight) NewUid() string {
-	f.Uid = utils.Nonce()
+	f.Uid = tokens.Nonce()
 	return f.Uid
 }
 

@@ -1,6 +1,6 @@
 package user
 
-import "github.com/laxeder/go-shop-service/pkg/modules/str"
+import "github.com/laxeder/go-shop-service/pkg/utils/str"
 
 type UserDocument struct {
 	Uuid        string `json:"uuid,omitempty"`

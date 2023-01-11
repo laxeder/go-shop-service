@@ -7,8 +7,8 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/category"
 	"github.com/laxeder/go-shop-service/pkg/modules/freight"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
-	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/str"
+	"github.com/laxeder/go-shop-service/pkg/utils/tokens"
 )
 
 type Product struct {
@@ -50,7 +50,7 @@ func New(productByte ...[]byte) (product *Product, err error) {
 }
 
 func (p *Product) NewUid() string {
-	p.Uid = utils.Nonce()
+	p.Uid = tokens.Nonce()
 	return p.Uid
 }
 

@@ -2,10 +2,10 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 	"github.com/laxeder/go-shop-service/pkg/modules/shopcart"
+	"github.com/laxeder/go-shop-service/pkg/utils/date"
 )
 
 func CreateShopCart(ctx *fiber.Ctx) error {

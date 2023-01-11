@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
 	"github.com/laxeder/go-shop-service/pkg/utils"
+	"github.com/laxeder/go-shop-service/pkg/utils/str"
 )
 
 type User struct {
