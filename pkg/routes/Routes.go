@@ -36,19 +36,19 @@ func ApiV1(app *fiber.App) {
 
 	//? ****************************** Rotas do endereço *****************************
 
-	route.Patch("/address/:uid", mid.JWT, addr.RestoreAddress)
-	route.Delete("/address/:uid", mid.JWT, addr.DeleteAddress)
-	route.Put("/address/:uid", mid.JWT, addr.UpdateAddress)
-	route.Get("/address/:uid", mid.JWT, addr.ShowAddress)
+	route.Patch("/address/:uuid/:uid", mid.JWT, addr.RestoreAddress)
+	route.Delete("/address/:uuid/:uid", mid.JWT, addr.DeleteAddress)
+	route.Get("/address/:uuid/:uid", mid.JWT, addr.ShowAddress)
+	route.Get("/adresses/:uuid", mid.JWT, addr.ListAddress)
 	route.Post("/address", mid.JWT, addr.CreateAddress)
-	route.Get("/adresses", mid.JWT, addr.ListAddress)
+	route.Put("/address", mid.JWT, addr.UpdateAddress)
 
 	//? ******************************** Rotas da conta ******************************
 
-	route.Patch("/account/:uid", mid.JWT, acc.RestoreAccount)
-	route.Delete("/account/:uid", mid.JWT, acc.DeleteAccount)
-	route.Put("/account/:uid", mid.JWT, acc.UpdateAccount)
-	route.Get("/account/:uid", mid.JWT, acc.ShowAccount)
+	route.Patch("/account/:uuid", mid.JWT, acc.RestoreAccount)
+	route.Delete("/account/:uuid", mid.JWT, acc.DeleteAccount)
+	route.Put("/account/:uuid", mid.JWT, acc.UpdateAccount)
+	route.Get("/account/:uuid", mid.JWT, acc.ShowAccount)
 	route.Post("/account", mid.JWT, acc.CreateAccount)
 	route.Get("/accounts", mid.JWT, acc.ListAccounts)
 
