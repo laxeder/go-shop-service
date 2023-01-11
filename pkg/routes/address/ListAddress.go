@@ -11,9 +11,12 @@ func ListAddress(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	addresss, err := address.Repository().GetList()
+	uuid := ctx.Params("uuid")
+
+	addresss, err := address.Repository().GetList(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar listar endereços, %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar listar endereços do usuário (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS031"))
 	}
 

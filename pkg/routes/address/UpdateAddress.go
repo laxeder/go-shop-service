@@ -3,40 +3,45 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/address"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 func UpdateAddress(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	body := ctx.Body()
+	uuid := ctx.Params("uuid")
 	uid := ctx.Params("uid")
+	body := ctx.Body()
+	addressBody := &address.Address{}
 
-	// converte json para struct
-	addressBody, err := address.New(body)
+	err := utils.InjectBytes(body, addressBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body no user (%s).", body)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS036", "O formado dos dados envidados está incorreto."))
 	}
 
-	// carrega o endereço da base de dados
-	addressDatabase, err := address.Repository().GetByUid(uid)
+	addressData, err := address.Repository().Get(uuid, uid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar endereço %v.", addressBody.Uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS037", "Erro ao tentar validar endereço."))
+		log.Error().Err(err).Msgf("Erro ao tentar obter endereço (%v:%v).", uuid, uid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS037"))
 	}
 
-	// injecta dos dados novos o lugar dos dsdos trazidos d abase de dados
-	addressDatabase.Inject(addressBody)
-	addressDatabase.UpdatedAt = date.NowUTC()
+	if addressData == nil {
+		log.Error().Err(err).Msgf("Endereço não encontrado (%v:%v).", uuid, uid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS221", "Esse endereço não foi encontrado na base de dados."))
+	}
 
-	// guarda as alterações do endereço na base de dados
-	err = address.Repository().Update(addressDatabase)
+	utils.Inject(addressBody, addressData)
+
+	err = address.Repository().Update(addressData)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório do endereço (%v)", addressBody.Uid)
+		log.Error().Err(err).Msgf("Erro ao tentar atualizar o endereço (%v)", addressBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS038"))
 	}
 

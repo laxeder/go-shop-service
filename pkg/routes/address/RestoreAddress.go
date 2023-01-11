@@ -3,40 +3,40 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/address"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
-// restaura um endereço com status deletado
 func RestoreAddress(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
+	uuid := ctx.Params("uuid")
 	uid := ctx.Params("uid")
 
-	addressDatabase, err := address.Repository().GetUid(uid)
+	addressData, err := address.Repository().GetDataInfo(uuid, uid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar endereço. (%v)", uid)
+		log.Error().Err(err).Msgf("Erro ao tentar obter endereço (%v:%v).", uuid, uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS032"))
 	}
 
-	// verifica o status do endereço
-	if addressDatabase.Status != address.Disabled {
-		log.Error().Msgf("Este endereço já está ativo no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS033", "Este endereço já está ativo no sistema."))
+	if addressData == nil {
+		log.Error().Msgf("Endereço não encontrado (%v:%v).", uuid, uid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS200", "Esse endereço não foi encontrado na base de dados."))
 	}
 
-	// muda o status do endereço para ativo
-	addressDatabase.Uid = uid
-	addressDatabase.Status = address.Enabled
-	addressDatabase.UpdatedAt = date.NowUTC()
+	if addressData.Status != status.Disabled {
+		log.Error().Msgf("Endereço já está ativado. (%v:%v)", uuid, uid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS033", "Este endereço já está ativado na base de dados."))
+	}
 
-	// salva as alterações na base de dados
-	err = address.Repository().Restore(addressDatabase)
+	err = address.Repository().Restore(uuid, uid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS034", "O formado dos dados envidados está incorreto."))
+		log.Error().Err(err).Msgf("Erro ao tentar restaurar endereço (%v:%v).", uuid, uid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS034"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

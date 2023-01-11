@@ -7,16 +7,23 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 )
 
-// mostra os dados de um endereço
 func ShowAddress(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
+	uuid := ctx.Params("uuid")
 	uid := ctx.Params("uid")
 
-	addressData, err := address.Repository().GetByUid(uid)
+	addressData, err := address.Repository().Get(uuid, uid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos., %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter endereço (%v:%v).", uuid, uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS035"))
+	}
+
+	if addressData == nil {
+		log.Error().Msgf("Endereço não encontrado (%v:%v).", uuid, uid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS201", "Esse endereço não foi encontrado na base de dados."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, addressData))
