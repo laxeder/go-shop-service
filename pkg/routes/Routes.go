@@ -65,9 +65,9 @@ func ApiV1(app *fiber.App) {
 
 	route.Patch("/category/:code", mid.JWT, ctg.RestoreCategory)
 	route.Delete("/category/:code", mid.JWT, ctg.DeleteCategory)
-	route.Put("/category/:code", mid.JWT, ctg.UpdateCategory)
 	route.Get("/category/:code", mid.JWT, ctg.ShowCategory)
 	route.Post("/category", mid.JWT, ctg.CreateCategory)
+	route.Put("/category", mid.JWT, ctg.UpdateCategory)
 	route.Get("/categories", mid.JWT, ctg.ListCategories)
 
 	//? ************************* Rotas do carrinho de compras *************************

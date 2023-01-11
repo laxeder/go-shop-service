@@ -29,7 +29,7 @@ func UpdateCategory(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS058"))
 	}
 
-	if categoryData != nil {
+	if categoryData == nil {
 		log.Error().Msgf("Categoria não encontrada (%v).", categoryBody.Code)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS057", "Essa categoria não foi encontrada na base de dados."))
 	}
