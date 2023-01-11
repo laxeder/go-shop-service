@@ -19,7 +19,7 @@ func UpdateUser(ctx *fiber.Ctx) error {
 	err := utils.InjectBytes(body, userBody)
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar injetar a body no user. (%s)", body)
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body no user (%s).", body)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS130", "O formado dos dados envidados está incorreto."))
 	}
 
