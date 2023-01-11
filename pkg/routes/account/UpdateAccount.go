@@ -3,49 +3,44 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/account"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
-// atualiza dados da conta
 func UpdateAccount(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
+	uuid := ctx.Params("uuid")
 	body := ctx.Body()
-	uid := ctx.Params("uid")
+	accountBody := &account.Account{}
 
-	// converte json para struct
-	accountBody, err := account.New(body)
+	err := utils.InjectBytes(body, accountBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body na conta. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS019", "O formado dos dados envidados está incorreto."))
 	}
 
-	// valida os campos enviados
-	// checkAccount := accountBody.Valid()
-	// if checkAccount.Status != 200 {
-	// 	return response.Ctx(ctx).Result(checkAccount)
-	// }
+	accountData, err := account.Repository().Get(uuid)
 
-	// carrega o usuário da base de dados
-
-	accountDatabase, err := account.Repository().GetByUid(uid)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar usuário %v.", accountBody.Uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS020", "Erro ao tentar validar usuário."))
+		log.Error().Err(err).Msgf("Erro ao tentar obter conta %v.", uuid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS020"))
 	}
 
-	// formata a atualização
-	accountDatabase.Inject(accountBody)
-	accountDatabase.Birthday = date.BRToUTC(accountBody.Birthday)
-	accountDatabase.UpdatedAt = date.NowUTC()
+	if accountData == nil {
+		log.Error().Err(err).Msgf("Conta não encontrada (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS183", "Essa conta não foi encontrada na base de dados."))
+	}
 
-	// guarda as alterações na base de dados
-	err = account.Repository().Update(accountDatabase)
+	utils.Inject(accountBody, accountData)
+
+	err = account.Repository().Update(accountData)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar encontrar o usuário %v no repositório", uid)
+		log.Error().Err(err).Msgf("Erro ao tentar atualizar conta (%v).", accountBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS021"))
 	}
 

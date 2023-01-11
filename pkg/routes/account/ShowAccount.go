@@ -7,17 +7,22 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 )
 
-// mosta os dados de uma consta
 func ShowAccount(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	uid := ctx.Params("uid")
+	uuid := ctx.Params("uuid")
 
-	accountData, err := account.Repository().GetByUid(uid)
+	accountData, err := account.Repository().Get(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar repositório do usuário %v", uid)
+		log.Error().Err(err).Msgf("Erro ao tentar obter conta (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS018"))
+	}
+
+	if accountData == nil {
+		log.Error().Msgf("Conta não encontrada (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS196", "Essa conta não foi encontrada na base de dados."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, accountData))

@@ -3,40 +3,39 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/account"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
-// restaura uma conta de conta com status deletado
 func RestoreAccount(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	uid := ctx.Params("uid")
+	uuid := ctx.Params("uuid")
 
-	accountDatabase, err := account.Repository().GetUid(uid)
+	accountData, err := account.Repository().GetDataInfo(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar conta. (%v)", uid)
+		log.Error().Err(err).Msgf("Erro ao tentar obter conta. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS015"))
 	}
 
-	// verifica o status do conta
-	if accountDatabase.Status == account.Enabled {
-		log.Error().Msgf("Este conta já está ativada no sistema. (%v)", uid)
+	if accountData == nil {
+		log.Error().Msgf("Conta já está ativada (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS195", "Esta conta já está ativada no sistema."))
+	}
+
+	if accountData.Status == status.Enabled {
+		log.Error().Msgf("Conta já está ativada. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS016", "Este conta já está ativo no sistema."))
 	}
 
-	// muda o status do conta para ativo
-	accountDatabase.Uuid = uid
-	accountDatabase.Status = account.Enabled
-	accountDatabase.UpdatedAt = date.NowUTC()
+	err = account.Repository().Restore(uuid)
 
-	// salva as alterações na base de dados
-	err = account.Repository().Restore(accountDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS017", "O formado dos dados envidados está incorreto."))
+		log.Error().Err(err).Msgf("Erro ao tentar restaurar conta. (%v)", uuid)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS126"))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(204))

@@ -3,36 +3,38 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/account"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
-// muda o status do conta na base de dados
 func DeleteAccount(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
-	uid := ctx.Params("uid")
+	uuid := ctx.Params("uuid")
 
-	accountDatabase, err := account.Repository().GetUid(uid)
+	accountData, err := account.Repository().GetDataInfo(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter conta (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS011"))
 	}
 
-	// verifica o status da conta
-	if accountDatabase.Status == account.Disabled {
-		log.Error().Msgf("Esta conta já está desativado no sistema. (%v)", uid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS012", "Esta conta já está desativado no sistema."))
+	if accountData == nil {
+		log.Error().Msgf("Conta não encontrada. (%v)", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS012", "Essa conta não foi encontrada na base de dados."))
 	}
 
-	accountDatabase.Uuid = uid
-	accountDatabase.Status = account.Disabled
-	accountDatabase.UpdatedAt = date.NowUTC()
+	if accountData.Status != status.Enabled {
+		log.Error().Msgf("Conta já está desativada (%v).", uuid)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS194", "Esta conta já está desativada no sistema."))
+	}
 
-	err = account.Repository().Delete(accountDatabase)
+	err = account.Repository().Delete(uuid)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar deletar conta (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS013"))
 	}
 
