@@ -3,36 +3,38 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/category"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
 )
 
-// muda o status da categoria na base de dados
 func DeleteCategory(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
 	code := ctx.Params("code")
 
-	categoryDatabase, err := category.Repository().GetByCode(code)
+	categoryData, err := category.Repository().GetDataInfo(code)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter categoria (%v).", code)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS044"))
 	}
 
-	// verifica o status da categoria
-	if categoryDatabase.Status != category.Enabled {
-		log.Error().Msgf("Está categoria já está desativado no sistema. (%v)", code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS045", "Está categoria já está desativado no sistema."))
+	if categoryData == nil {
+		log.Error().Msgf("Categoria não encontrada (%v).", code)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS185", "Essa categoria não foi encontrada na base de dados."))
 	}
 
-	categoryDatabase.Status = category.Disabled
-	categoryDatabase.UpdatedAt = date.NowUTC()
-	categoryDatabase.Code = code
+	if categoryData.Status != status.Enabled {
+		log.Error().Msgf("Categoria já está desativada. (%v)", code)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS045", "Está categoria já está desativada no sistema."))
+	}
 
-	err = category.Repository().Delete(categoryDatabase)
+	err = category.Repository().Delete(code)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar deletar categoria (%v).", code)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS046"))
 	}
 

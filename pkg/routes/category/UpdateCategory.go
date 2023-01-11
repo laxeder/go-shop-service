@@ -3,9 +3,9 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/category"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 func UpdateCategory(ctx *fiber.Ctx) error {
@@ -13,37 +13,33 @@ func UpdateCategory(ctx *fiber.Ctx) error {
 	var log = logger.New()
 
 	body := ctx.Body()
-	code := ctx.Params("code")
+	categoryBody := &category.Category{}
 
-	// converte json para struct
-	categoryBody, err := category.New(body)
+	err := utils.InjectBytes(body, categoryBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("O formado dos dados envidados está incorreto. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body na categoria. (%s)", body)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS056", "O formado dos dados envidados está incorreto."))
 	}
 
-	// verifica e compara a categoria recebida
-	if categoryBody.Code != "" && code != categoryBody.Code {
-		log.Error().Msgf("Não é possível atualizar a categoria %v para o %v", code, categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS057", "Não é possível atualizar a categoria "+code+" para o "+categoryBody.Code))
+	categoryData, err := category.Repository().Get(categoryBody.Code)
+
+	if err != nil {
+		log.Error().Err(err).Msgf("Erro ao tentar obter a categoria (%v).", categoryBody.Code)
+		return response.Ctx(ctx).Result(response.ErrorDefault("GSS058"))
 	}
 
-	// carrega a categoria da base de dados
-	categoryDatabase, err := category.Repository().GetByCode(code)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar validar a categoria %v.", categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS058", "Erro ao tentar validar a categoria."))
+	if categoryData != nil {
+		log.Error().Msgf("Categoria não encontrada (%v).", categoryBody.Code)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS057", "Essa categoria não foi encontrada na base de dados."))
 	}
 
-	// injeta os dados novos no lugar dos dados trazidos da base de dados
-	categoryDatabase.Inject(categoryBody)
-	categoryDatabase.UpdatedAt = date.NowUTC()
-	categoryDatabase.Code = code
+	utils.Inject(categoryBody, categoryData)
 
-	// guarda as alterações da categoria na base de dados
-	err = category.Repository().Update(categoryDatabase)
+	err = category.Repository().Update(categoryData)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro a tentar atualizar o repositório da categoria (%v)", categoryBody.Code)
+		log.Error().Err(err).Msgf("Erro a tentar atualizar categoria (%v).", categoryBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS059"))
 	}
 

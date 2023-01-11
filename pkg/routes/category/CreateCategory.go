@@ -3,54 +3,41 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/laxeder/go-shop-service/pkg/modules/category"
-	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
-// cria uma nova categoria na base de ddaos
 func CreateCategory(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
 	body := ctx.Body()
+	categoryBody := &category.Category{}
 
-	// transforma o json em Struct
-	categoryBody, err := category.New(body)
+	err := utils.InjectBytes(body, categoryBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS039", "Os campos enviados estão incorretos."))
+		log.Error().Err(err).Msgf("Erro ao tentar injetar a body na categoria. %s", body)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS039", "O formado dos dados envidados está incorreto."))
 	}
 
-	// Cria um CODE para a categoria
-	categoryBody.NewCode()
+	categoryData, err := category.Repository().Get(categoryBody.Code)
 
-	categoryDatabase, err := category.Repository().GetByCode(categoryBody.Code)
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter categoria pelo code (%v)", categoryBody.Code)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS040"))
 	}
 
-	// verifica se a categoria está desabilitado
-	if categoryDatabase.Status == category.Disabled {
-		log.Error().Msgf("Está categoria (%v) está desabilitado por tempo indeterminado.", categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS041", "Está categoria está desabilitado por tempo indeterminado."))
+	if categoryData != nil {
+		log.Error().Msgf("Categoria já registrada.", categoryBody.Code)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS041", "Essa categoria já está registrada na base de dados."))
 	}
 
-	// verifica se a categoria existe
-	if len(categoryDatabase.Code) > 0 {
-		log.Error().Msgf("Está categoria (%v) já existe na nossa base de dados.", categoryBody.Code)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS042", "Está categoria já existe na nossa base de dados."))
-	}
-
-	categoryBody.Status = category.Enabled
-	categoryBody.CreatedAt = date.NowUTC()
-	categoryBody.UpdatedAt = date.NowUTC()
-
-	// armazena a categoria na base de dados
 	err = category.Repository().Save(categoryBody)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar repositório de categorias %v", categoryBody.Code)
+		log.Error().Err(err).Msgf("Erro ao tentar salvar categoria (%v)", categoryBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS043"))
 	}
 

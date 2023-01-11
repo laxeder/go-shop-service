@@ -7,17 +7,22 @@ import (
 	"github.com/laxeder/go-shop-service/pkg/modules/response"
 )
 
-// mostra os dados de uma categoria
 func ShowCategory(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
 	code := ctx.Params("code")
 
-	// carrega uma categoria da base de dados
-	categoryData, err := category.Repository().GetByCode(code)
+	categoryData, err := category.Repository().Get(code)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Os campos enviados estão incorretos. %v", err)
+		log.Error().Err(err).Msgf("Erro ao tentar obter categoria (%v).", code)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS055"))
+	}
+
+	if categoryData == nil {
+		log.Error().Msgf("Catgeoria não encontrada (%v).", code)
+		return response.Ctx(ctx).Result(response.Error(400, "GSS198", "Essa categoria não foi encontrada na base de dados."))
 	}
 
 	return response.Ctx(ctx).Result(response.Success(200, categoryData))

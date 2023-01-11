@@ -6,45 +6,62 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/laxeder/go-shop-service/pkg/modules/logger"
 	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
-	"github.com/laxeder/go-shop-service/pkg/modules/str"
+	"github.com/laxeder/go-shop-service/pkg/shared/status"
+	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 var redisClient *redis.Client
-var log = logger.New()
 
 func Repository() *Category {
 	return &Category{}
 }
 
+func (c *Category) Exists(code string, ignoreStatus bool) (bool, error) {
+
+	categoryData, err := redisdb.GetDataInfo(redisdb.CategoryDatabase, fmt.Sprintf("categories:%v", code))
+
+	if err != nil {
+		return false, err
+	}
+
+	if categoryData == nil {
+		return false, nil
+	}
+
+	if !ignoreStatus && categoryData.Status != status.Enabled {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (c *Category) Save(category *Category) (err error) {
 
-	ctx := context.Background()
-	err = nil
+	redisClient, err = redisdb.New(redisdb.CategoryDatabase)
 
-	redisClient, err = redisdb.New(redisdb.ProductDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.ProductDatabase)
 		return
 	}
 
-	code := str.PadCategory(category.Code)
+	ctx := context.Background()
 
-	key := fmt.Sprintf("categories:%v", code)
+	category.GenerateCode()
 
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+	key := fmt.Sprintf("categories:%v", category.Code)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		rdb.HSet(ctx, key, "code", category.Code)
 		rdb.HSet(ctx, key, "name", category.Name)
 		rdb.HSet(ctx, key, "description", category.Description)
-		rdb.HSet(ctx, key, "code", category.Code)
-		rdb.HSet(ctx, key, "status", string(category.Status))
-		rdb.HSet(ctx, key, "updated_at", category.UpdatedAt)
-		rdb.HSet(ctx, key, "created_at", category.CreatedAt)
-		return err
+
+		redisdb.CreateDataInfo(rdb, ctx, key)
+
+		return
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível inserir a categoria no redis. (%v)", category.Code)
 		return
 	}
 
@@ -53,168 +70,124 @@ func (c *Category) Save(category *Category) (err error) {
 
 func (c *Category) Update(category *Category) (err error) {
 
-	ctx := context.Background()
-	err = nil
+	exists, err := c.Exists(category.Code, false)
 
-	redisClient, err = redisdb.New(redisdb.CategoriesDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
 		return
 	}
 
-	code := str.PadCategory(category.Code)
+	if !exists {
+		return fmt.Errorf("Category does not exist")
+	}
 
-	key := fmt.Sprintf("categories:%v", code)
+	redisClient, err = redisdb.New(redisdb.CategoryDatabase)
 
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	key := fmt.Sprintf("categories:%v", category.Code)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
 		rdb.HSet(ctx, key, "name", category.Name)
 		rdb.HSet(ctx, key, "description", category.Description)
-		rdb.HSet(ctx, key, "updated_at", category.UpdatedAt)
-		return nil
+
+		redisdb.UpdateDataInfo(rdb, ctx, key)
+
+		return
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível atualizar a categoria no redis. (%v)", category.Code)
 		return
 	}
 
 	return
 }
 
-func (c *Category) GetByCode(code string) (category *Category, err error) {
+func (c *Category) Get(code string) (category *Category, err error) {
 
-	var log = logger.New()
+	redisClient, err := redisdb.New(redisdb.CategoryDatabase)
 
-	category = &Category{}
-	err = nil
-
-	ctx := context.Background()
-
-	redisClient, err := redisdb.New(redisdb.CategoriesDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
-		return nil, err
+		return
 	}
 
-	code = str.PadCategory(code)
+	ctx := context.Background()
+	category = &Category{}
 
 	key := fmt.Sprintf("categories:%v", code)
+
 	res := redisClient.HGetAll(ctx, key)
 
 	err = res.Err()
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar a categoria com o code: %v.", code)
 		return
 	}
 
 	err = res.Scan(category)
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear a categoria com o code %v.", code)
 		return
 	}
 
-	if category.Status == Disabled {
-		category = &Category{Status: Disabled, Code: code}
+	err = utils.InjectMap(res.Val(), category)
+
+	if err != nil {
+		return
+	}
+
+	if category.Status != status.Enabled {
+		return nil, nil
+	}
+
+	return
+}
+
+func (c *Category) GetDataInfo(code string) (dataInfo *redisdb.DataInfo, err error) {
+
+	dataInfo, err = redisdb.GetDataInfo(redisdb.CategoryDatabase, fmt.Sprintf("categories:%v", code))
+
+	if err != nil || dataInfo == nil {
 		return
 	}
 
 	return
 }
 
-func (c *Category) Delete(category *Category) (err error) {
-
-	err = nil
-
-	ctx := context.Background()
-
-	redisClient, err = redisdb.New(redisdb.CategoriesDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
-		return err
-	}
-
-	code := str.PadCategory(category.Code)
-
-	category.Status = Disabled
-
-	key := fmt.Sprintf("categories:%v", code)
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "status", string(category.Status))
-		rdb.HSet(ctx, key, "updated_at", category.UpdatedAt)
-		return nil
-	})
-
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível deletar a categoria com o code %v no redis.", code)
-		return err
-	}
-
-	return nil
-}
-
-func (c *Category) Restore(category *Category) (err error) {
-
-	err = nil
-
-	ctx := context.Background()
-
-	redisClient, err = redisdb.New(redisdb.CategoriesDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
-		return err
-	}
-
-	code := str.PadCategory(category.Code)
-
-	category.Status = Enabled
-
-	key := fmt.Sprintf("categories:%v", code)
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "status", string(category.Status))
-		rdb.HSet(ctx, key, "updated_at", category.UpdatedAt)
-		return nil
-	})
-
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível restaurar a categoria com o code %v no redis.", code)
-		return err
-	}
-
-	return nil
-}
-
 func (c *Category) GetList() (categories []Category, err error) {
 
-	err = nil
+	redisClient, err := redisdb.New(redisdb.CategoryDatabase)
 
-	ctx := context.Background()
-
-	redisClient, err := redisdb.New(redisdb.CategoriesDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
 		return
 	}
 
-	iter := redisClient.Scan(ctx, 0, "categories:*", 0).Iterator()
-	for iter.Next(ctx) {
-		code := strings.Replace(iter.Val(), "categories:", "", 2)
-		category, uErr := c.GetByCode(code)
+	ctx := context.Background()
 
-		if uErr != nil {
+	iter := redisClient.Scan(ctx, 0, "categories:*", 0).Iterator()
+
+	err = iter.Err()
+
+	if err != nil {
+		return
+	}
+
+	for iter.Next(ctx) {
+		category, er := c.Get(strings.Replace(iter.Val(), "categories:", "", 2))
+
+		if er != nil {
 			continue
 		}
 
-		if category.Status == Disabled {
+		if category == nil {
 			continue
 		}
 
 		categories = append(categories, *category)
-	}
-
-	err = iter.Err()
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível listar as categorias do banco de dados.")
-		return
 	}
 
 	return
@@ -222,24 +195,91 @@ func (c *Category) GetList() (categories []Category, err error) {
 
 func (c *Category) GetKeys() (codes []string, err error) {
 
-	err = nil
+	redisClient, err := redisdb.New(redisdb.CategoryDatabase)
 
-	ctx := context.Background()
-
-	redisClient, err := redisdb.New(redisdb.CategoriesDatabase)
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.CategoriesDatabase)
 		return
 	}
 
+	ctx := context.Background()
+
 	iter := redisClient.Scan(ctx, 0, "categories:*", 0).Iterator()
+
 	for iter.Next(ctx) {
 		codes = append(codes, strings.Replace(iter.Val(), "categories:", "", 2))
 	}
 
 	err = iter.Err()
+
 	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível listar as categorias do banco de dados.")
+		return
+	}
+
+	return
+}
+
+func (c *Category) Delete(code string) (err error) {
+
+	exists, err := c.Exists(code, true)
+
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("Category does not exist")
+	}
+
+	redisClient, err = redisdb.New(redisdb.CategoryDatabase)
+
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	key := fmt.Sprintf("categories:%v", code)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		redisdb.UpdateDataStatus(rdb, ctx, key, status.Disabled)
+
+		return
+	})
+
+	return
+}
+
+func (c *Category) Restore(code string) (err error) {
+
+	exists, err := c.Exists(code, true)
+
+	if err != nil {
+		return
+	}
+
+	if !exists {
+		return fmt.Errorf("Category does not exist")
+	}
+
+	redisClient, err = redisdb.New(redisdb.CategoryDatabase)
+
+	if err != nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	key := fmt.Sprintf("categories:%v", code)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
+
+		redisdb.UpdateDataStatus(rdb, ctx, key, status.Enabled)
+
+		return
+	})
+
+	if err != nil {
 		return
 	}
 
