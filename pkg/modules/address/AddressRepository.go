@@ -46,6 +46,8 @@ func (a *Address) Save(address *Address) (err error) {
 
 	ctx := context.Background()
 
+	address.GenerateUid()
+
 	key := fmt.Sprintf("adresses:%v:%v", address.Uuid, address.Uid)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
@@ -125,7 +127,7 @@ func (a *Address) Get(uuid string, uid string) (address *Address, err error) {
 	ctx := context.Background()
 	address = &Address{}
 
-	key := fmt.Sprintf("adresses:%v:%v", address.Uuid, address.Uid)
+	key := fmt.Sprintf("adresses:%v:%v", uuid, uid)
 
 	res := redisClient.HGetAll(ctx, key)
 
@@ -175,9 +177,7 @@ func (a *Address) GetList(uuid string) (adresses []Address, err error) {
 
 	ctx := context.Background()
 
-	key := fmt.Sprintf("adresses:%v:*", uuid)
-
-	iter := redisClient.Scan(ctx, 0, key, 0).Iterator()
+	iter := redisClient.Scan(ctx, 0, fmt.Sprintf("adresses:%v:*", uuid), 0).Iterator()
 
 	err = iter.Err()
 
@@ -186,7 +186,7 @@ func (a *Address) GetList(uuid string) (adresses []Address, err error) {
 	}
 
 	for iter.Next(ctx) {
-		address, er := a.Get(uuid, strings.Replace(iter.Val(), key, "", 2))
+		address, er := a.Get(uuid, strings.Replace(iter.Val(), fmt.Sprintf("adresses:%v:", uuid), "", 2))
 
 		if er != nil {
 			continue

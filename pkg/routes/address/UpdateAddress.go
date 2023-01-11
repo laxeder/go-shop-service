@@ -12,8 +12,6 @@ func UpdateAddress(ctx *fiber.Ctx) error {
 
 	var log = logger.New()
 
-	uuid := ctx.Params("uuid")
-	uid := ctx.Params("uid")
 	body := ctx.Body()
 	addressBody := &address.Address{}
 
@@ -24,15 +22,15 @@ func UpdateAddress(ctx *fiber.Ctx) error {
 		return response.Ctx(ctx).Result(response.Error(400, "GSS036", "O formado dos dados envidados está incorreto."))
 	}
 
-	addressData, err := address.Repository().Get(uuid, uid)
+	addressData, err := address.Repository().Get(addressBody.Uuid, addressBody.Uid)
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar obter endereço (%v:%v).", uuid, uid)
+		log.Error().Err(err).Msgf("Erro ao tentar obter endereço (%v:%v).", addressBody.Uuid, addressBody.Uid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS037"))
 	}
 
 	if addressData == nil {
-		log.Error().Err(err).Msgf("Endereço não encontrado (%v:%v).", uuid, uid)
+		log.Error().Err(err).Msgf("Endereço não encontrado (%v:%v).", addressBody.Uuid, addressBody.Uid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS221", "Esse endereço não foi encontrado na base de dados."))
 	}
 

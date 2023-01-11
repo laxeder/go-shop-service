@@ -1,6 +1,9 @@
 package address
 
-import "github.com/laxeder/go-shop-service/pkg/modules/redisdb"
+import (
+	"github.com/laxeder/go-shop-service/pkg/modules/redisdb"
+	"github.com/laxeder/go-shop-service/pkg/utils"
+)
 
 type Address struct {
 	Uuid         string `json:"uuid,omitempty" redis:"uuid,omitempty"`
@@ -12,4 +15,8 @@ type Address struct {
 	City         string `json:"city,omitempty" redis:"city,omitempty"`
 	State        string `json:"state,omitempty" redis:"state,omitempty"`
 	redisdb.DataInfo
+}
+
+func (a *Address) GenerateUid() {
+	a.Uid = utils.Nonce()
 }
