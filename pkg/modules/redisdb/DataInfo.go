@@ -6,18 +6,15 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/laxeder/go-shop-service/pkg/modules/date"
 	"github.com/laxeder/go-shop-service/pkg/shared/status"
-	"github.com/laxeder/go-shop-service/pkg/utils"
 )
 
 type DataInfo struct {
-	Id        string        `json:"id,omitempty" redis:"id,omitempty"`
 	Status    status.Status `json:"status,omitempty" redis:"status,omitempty"`
 	CreatedAt string        `json:"created_at,omitempty" redis:"created_at,omitempty"`
 	UpdatedAt string        `json:"updated_at,omitempty" redis:"updated_at,omitempty"`
 }
 
 func CreateDataInfo(rdb redis.Pipeliner, ctx context.Context, key string) {
-	rdb.HSet(ctx, key, "id", utils.Nonce())
 	rdb.HSet(ctx, key, "status", string(status.Enabled))
 	rdb.HSet(ctx, key, "created_at", date.NowUTC())
 	rdb.HSet(ctx, key, "updated_at", date.NowUTC())
@@ -43,7 +40,7 @@ func GetDataInfo(database Nodedatabase, key string) (dataInfo *DataInfo, err err
 		return nil, err
 	}
 
-	res := redisClient.HMGet(ctx, key, "id", "status", "created_at", "updated_at")
+	res := redisClient.HMGet(ctx, key, "status", "created_at", "updated_at")
 
 	err = res.Err()
 
@@ -59,10 +56,6 @@ func GetDataInfo(database Nodedatabase, key string) (dataInfo *DataInfo, err err
 
 	if err != nil {
 		return nil, err
-	}
-
-	if dataInfo.Id == "" {
-		return nil, nil
 	}
 
 	return
