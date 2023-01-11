@@ -23,10 +23,10 @@ func RestoreAccount(ctx *fiber.Ctx) error {
 
 	if accountData == nil {
 		log.Error().Msgf("Conta já está ativada (%v).", uuid)
-		return response.Ctx(ctx).Result(response.Error(400, "GSS195", "Esta conta já está ativada no sistema."))
+		return response.Ctx(ctx).Result(response.Error(400, "GSS195", "Essa conta não foi encontrada na base de dados."))
 	}
 
-	if accountData.Status == status.Enabled {
+	if accountData.Status != status.Disabled {
 		log.Error().Msgf("Conta já está ativada. (%v)", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS016", "Este conta já está ativo no sistema."))
 	}
