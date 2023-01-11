@@ -37,7 +37,7 @@ func CreateUser(ctx *fiber.Ctx) error {
 	err = user.Repository().Save(userBody)
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tentar salvar usuário %v", userBody)
+		log.Error().Err(err).Msgf("Erro ao tentar salvar usuário (%v)", userBody)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS115"))
 	}
 

@@ -14,19 +14,19 @@ func RestoreUser(ctx *fiber.Ctx) error {
 
 	uuid := ctx.Params("uuid")
 
-	userInfo, err := user.Repository().GetDataInfo(uuid)
+	userData, err := user.Repository().GetDataInfo(uuid)
 
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar obter usuário (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS124"))
 	}
 
-	if userInfo == nil {
+	if userData == nil {
 		log.Error().Msgf("Usuário não encontrado (%v).", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS184", "Esse usuário não foi encontrado na base de dados."))
 	}
 
-	if userInfo.Status != status.Disabled {
+	if userData.Status != status.Disabled {
 		log.Error().Msgf("Usuário já está ativado (%v).", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS125", "Este usuário já está ativado no sistema."))
 	}

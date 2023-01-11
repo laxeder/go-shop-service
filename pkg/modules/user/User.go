@@ -18,7 +18,7 @@ type User struct {
 	Email           string `json:"email,omitempty" redis:"email,omitempty"`
 	Telephone       string `json:"telephone,omitempty" redis:"telephone,omitempty"`
 	Password        string `json:"password,omitempty" redis:"password,omitempty"`
-	ConfirmPassword string `json:"confirm_password,omitempty" redis:"-,omitempty"`
+	ConfirmPassword string `json:"confirm_password,omitempty" redis:"-"`
 	Salt            string `json:"salt,omitempty" redis:"salt,omitempty"`
 	redisdb.DataInfo
 }

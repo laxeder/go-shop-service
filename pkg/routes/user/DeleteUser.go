@@ -14,19 +14,19 @@ func DeleteUser(ctx *fiber.Ctx) error {
 
 	uuid := ctx.Params("uuid")
 
-	userInfo, err := user.Repository().GetDataInfo(uuid)
+	userData, err := user.Repository().GetDataInfo(uuid)
 
 	if err != nil {
 		log.Error().Err(err).Msgf("Erro ao tentar obter usuário (%v).", uuid)
 		return response.Ctx(ctx).Result(response.ErrorDefault("GSS116"))
 	}
 
-	if userInfo == nil {
+	if userData == nil {
 		log.Error().Msgf("Usuário não encontrado (%v).", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS185", "Esse usuário não foi encontrado na base de dados."))
 	}
 
-	if userInfo.Status != status.Enabled {
+	if userData.Status != status.Enabled {
 		log.Error().Msgf("Usuário já está desativado (%v).", uuid)
 		return response.Ctx(ctx).Result(response.Error(400, "GSS117", "Este usuário já está desativado no sistema."))
 	}

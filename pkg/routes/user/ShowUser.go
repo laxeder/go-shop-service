@@ -8,6 +8,7 @@ import (
 )
 
 func ShowUser(ctx *fiber.Ctx) error {
+
 	var log = logger.New()
 
 	uuid := ctx.Params("uuid")
