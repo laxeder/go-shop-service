@@ -18,30 +18,6 @@ func Repository() *Product {
 	return &Product{}
 }
 
-func MarshalBinary(str []string) (data []byte) {
-	var log = logger.New()
-
-	data, err := json.Marshal(str)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tranformar array em bytes %s", str)
-	}
-
-	return
-}
-
-func UnmarshalBinary(bff []byte) []string {
-	var log = logger.New()
-
-	data := &[]string{}
-
-	err := json.Unmarshal(bff, data)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao tranformar bytes em array %s", bff)
-	}
-
-	return *data
-}
-
 func (p *Product) Save(product *Product) (err error) {
 	var log = logger.New()
 
@@ -54,28 +30,28 @@ func (p *Product) Save(product *Product) (err error) {
 		return
 	}
 
-	//? Define as categorias pelo code delas
-	product.ApplyCategoryCodes()
-
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categories := MarshalBinary(product.CategoryCodes)
-	pictures := MarshalBinary(product.Pictures)
 
-	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+	categories, _ := json.Marshal(product.GetCategoryCodes())
+	freights, _ := json.Marshal(product.GetFreightsUid())
+	pictures, _ := json.Marshal(product.Pictures)
+
+	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) (err error) {
 		rdb.HSet(ctx, key, "uid", product.Uid)
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "category_codes", categories)
-		rdb.HSet(ctx, key, "price", product.Price)
+		rdb.HSet(ctx, key, "categories", categories)
+		rdb.HSet(ctx, key, "freights", freights)
+		rdb.HSet(ctx, key, "color", product.Color)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
+		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "weight", product.Weight)
-		rdb.HSet(ctx, key, "color", product.Color)
-		rdb.HSet(ctx, key, "status", string(product.Status))
-		rdb.HSet(ctx, key, "updated_at", product.UpdatedAt)
-		rdb.HSet(ctx, key, "created_at", product.CreatedAt)
-		return err
+
+		redisdb.CreateDataInfo(rdb, ctx, key)
+
+		return
 	})
 
 	if err != nil {
@@ -98,27 +74,23 @@ func (p *Product) Update(product *Product) (err error) {
 		return
 	}
 
-	//? Define as categorias pelo code delas
-	product.ApplyCategoryCodes()
-
 	key := fmt.Sprintf("products:%v", product.Uid)
-	categories := MarshalBinary(product.CategoryCodes)
-	pictures := MarshalBinary(product.Pictures)
+
+	categories, _ := json.Marshal(product.GetCategoryCodes())
+	freights, _ := json.Marshal(product.GetFreightsUid())
+	pictures, _ := json.Marshal(product.Pictures)
 
 	_, err = redisClient.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, "uid", product.Uid)
 		rdb.HSet(ctx, key, "name", product.Name)
 		rdb.HSet(ctx, key, "description", product.Description)
 		rdb.HSet(ctx, key, "pictures", pictures)
-		rdb.HSet(ctx, key, "category_codes", categories)
-		rdb.HSet(ctx, key, "price", product.Price)
+		rdb.HSet(ctx, key, "categories", categories)
+		rdb.HSet(ctx, key, "freights", freights)
+		rdb.HSet(ctx, key, "color", product.Color)
 		rdb.HSet(ctx, key, "promotion", product.Promotion)
 		rdb.HSet(ctx, key, "code", product.Code)
+		rdb.HSet(ctx, key, "price", product.Price)
 		rdb.HSet(ctx, key, "weight", product.Weight)
-		rdb.HSet(ctx, key, "color", product.Color)
-		rdb.HSet(ctx, key, "status", string(product.Status))
-		rdb.HSet(ctx, key, "updated_at", product.UpdatedAt)
-		rdb.HSet(ctx, key, "created_at", product.CreatedAt)
 		return nil
 	})
 
@@ -130,44 +102,7 @@ func (p *Product) Update(product *Product) (err error) {
 	return
 }
 
-func (p *Product) GetUid(uid string) (product *Product, err error) {
-
-	var log = logger.New()
-
-	product = &Product{}
-	err = nil
-
-	ctx := context.Background()
-
-	redisClient, err := redisdb.New(redisdb.ProductDatabase)
-	if err != nil {
-		log.Error().Err(err).Msgf("Erro ao acessar banco de dados (%v)", redisdb.ProductDatabase)
-		return nil, err
-	}
-
-	key := fmt.Sprintf("products:%v", uid)
-	res := redisClient.HMGet(ctx, key, "uid", "status")
-	err = res.Err()
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível encontrar o produto com o uid: %v.", uid)
-		return p, err
-	}
-
-	err = res.Scan(product)
-	if err != nil {
-		log.Error().Err(err).Msgf("Não foi possível mapear um produto válido com o uid %v.", uid)
-		return nil, err
-	}
-
-	if product.Status == Disabled {
-		product = &Product{Status: Disabled}
-		return product, nil
-	}
-
-	return product, nil
-}
-
-func (p *Product) GetByUid(uid string) (product *Product, err error) {
+func (p *Product) Get(uid string) (product *Product, err error) {
 
 	var log = logger.New()
 
